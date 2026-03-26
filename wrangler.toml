@@ -1,0 +1,23 @@
+#:schema node_modules/wrangler/config-schema.json
+name = "morimichi"
+main = ".open-next/worker.js"
+compatibility_date = "2025-04-01"
+compatibility_flags = ["nodejs_compat"]
+
+[assets]
+directory = ".open-next/assets"
+binding = "ASSETS"
+
+[[kv_namespaces]]
+binding = "RATE_LIMIT_KV"
+id = "2bce83415c35480e8ff625db29008092"
+
+# Optional: schedule digest email processing (same KV as rate limits + digest:v1:* keys)
+# [triggers]
+# crons = ["*/10 * * * *"]
+# Then add a Worker route or external ping to GET /api/cron/notification-digest with CRON_SECRET.
+
+[vars]
+NEXT_PUBLIC_SUPABASE_URL = "https://sgzylqvgqfajqmdmgkkp.supabase.co"
+NEXT_PUBLIC_SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNnenlscXZncWZhanFtZG1na2twIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ1Mjk0NzcsImV4cCI6MjA5MDEwNTQ3N30.5dYOm5V5BptraKLpatq1S4fvqd9_7SRH102MW6LnaK0"
+NEXT_PUBLIC_SITE_URL = "https://morimichi.jp"
