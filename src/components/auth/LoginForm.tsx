@@ -49,6 +49,13 @@ export function LoginForm() {
       setServerError("セッションの保存に失敗しました。もう一度お試しください。");
       return;
     }
+    const boot = await fetch("/api/profile/bootstrap", { method: "POST" });
+    if (!boot.ok) {
+      setServerError(
+        "ログインはできましたがプロフィールの初期化に失敗しました。しばらくしてから再度ログインしてください。",
+      );
+      return;
+    }
     router.push(nextPath.startsWith("/") ? nextPath : "/consultations");
     router.refresh();
   });

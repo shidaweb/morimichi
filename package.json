@@ -8,7 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "preview": "opennextjs-cloudflare preview",
-    "deploy": "opennextjs-cloudflare deploy",
+    "deploy": "next build && opennextjs-cloudflare deploy",
     "cf-typegen": "wrangler types"
   },
   "dependencies": {

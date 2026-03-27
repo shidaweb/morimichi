@@ -1,3 +1,4 @@
+import { VerifyEmailClient } from "@/components/auth/VerifyEmailClient";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default function VerifyEmailPage() {
@@ -13,6 +14,9 @@ export default function VerifyEmailPage() {
         <p className="text-muted-foreground text-sm leading-relaxed">
           登録後すぐにログインできる設定の場合は、トップから「相談一覧」や「マイページ」へ進めます。
         </p>
+        <div className="mt-4">
+          <VerifyEmailClient />
+        </div>
       </CardContent>
     </Card>
   );

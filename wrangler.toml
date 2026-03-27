@@ -20,4 +20,4 @@ id = "2bce83415c35480e8ff625db29008092"
 [vars]
 NEXT_PUBLIC_SUPABASE_URL = "https://sgzylqvgqfajqmdmgkkp.supabase.co"
 NEXT_PUBLIC_SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNnenlscXZncWZhanFtZG1na2twIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ1Mjk0NzcsImV4cCI6MjA5MDEwNTQ3N30.5dYOm5V5BptraKLpatq1S4fvqd9_7SRH102MW6LnaK0"
-NEXT_PUBLIC_SITE_URL = "https://morimichi.jp"
+NEXT_PUBLIC_SITE_URL = "https://morimichi.cc"

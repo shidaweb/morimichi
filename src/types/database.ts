@@ -33,6 +33,21 @@ export type ReportReason =
 
 export type ReportStatus = "pending" | "reviewing" | "resolved" | "dismissed";
 
+export type ModerationActionType =
+  | "hide"
+  | "delete"
+  | "warn"
+  | "suspend"
+  | "ban"
+  | "no_action";
+
+export type SupportCategory =
+  | "public"
+  | "legal"
+  | "financial"
+  | "mental"
+  | "other";
+
 export interface Database {
   public: {
     Tables: {
@@ -303,6 +318,81 @@ export interface Database {
         };
         Relationships: [];
       };
+      moderation_actions: {
+        Row: {
+          id: string;
+          moderator_user_id: string;
+          report_id: string | null;
+          target_type: "consultation" | "reply" | "user";
+          target_id: string;
+          action: ModerationActionType;
+          note: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          moderator_user_id: string;
+          report_id?: string | null;
+          target_type: "consultation" | "reply" | "user";
+          target_id: string;
+          action: ModerationActionType;
+          note?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          moderator_user_id?: string;
+          report_id?: string | null;
+          target_type?: "consultation" | "reply" | "user";
+          target_id?: string;
+          action?: ModerationActionType;
+          note?: string | null;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      support_links: {
+        Row: {
+          id: string;
+          name: string;
+          category: SupportCategory;
+          description: string | null;
+          url: string;
+          phone_number: string | null;
+          is_paid_listing: boolean | null;
+          is_active: boolean | null;
+          sort_order: number | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          name: string;
+          category: SupportCategory;
+          description?: string | null;
+          url: string;
+          phone_number?: string | null;
+          is_paid_listing?: boolean | null;
+          is_active?: boolean | null;
+          sort_order?: number | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          name?: string;
+          category?: SupportCategory;
+          description?: string | null;
+          url?: string;
+          phone_number?: string | null;
+          is_paid_listing?: boolean | null;
+          is_active?: boolean | null;
+          sort_order?: number | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
       consultation_views: {
         Row: {
           id: string;
@@ -372,6 +462,8 @@ export interface Database {
       reaction_target: ReactionTarget;
       report_reason: ReportReason;
       report_status: ReportStatus;
+      moderation_action_type: ModerationActionType;
+      support_category: SupportCategory;
     };
     CompositeTypes: Record<string, never>;
   };

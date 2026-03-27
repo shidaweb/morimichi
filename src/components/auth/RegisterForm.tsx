@@ -57,11 +57,20 @@ export function RegisterForm({ phases, siteUrl }: Props) {
     setServerError(null);
     const redirectUrl = `${siteUrl.replace(/\/$/, "")}/verify-email`;
 
+    const experience =
+      values.role === "consulter" ? null : values.experiencePhases ?? null;
+
     const { data, error } = await supabase.auth.signUp({
       email: values.email,
       password: values.password,
       options: {
         emailRedirectTo: redirectUrl,
+        data: {
+          nickname: values.nickname,
+          role: values.role,
+          experience_phases:
+            experience && experience.length > 0 ? experience : null,
+        },
       },
     });
 
@@ -87,18 +96,13 @@ export function RegisterForm({ phases, siteUrl }: Props) {
         return;
       }
 
-      const experience =
-        values.role === "consulter" ? null : values.experiencePhases ?? null;
-
-      const { error: profileError } = await supabase.from("profiles").insert({
-        user_id: user.id,
-        nickname: values.nickname,
-        role: values.role,
-        experience_phases: experience && experience.length > 0 ? experience : null,
-      });
-
-      if (profileError) {
-        setServerError(profileError.message);
+      const boot = await fetch("/api/profile/bootstrap", { method: "POST" });
+      if (!boot.ok) {
+        const body = (await boot.json().catch(() => null)) as { detail?: string } | null;
+        setServerError(
+          body?.detail ??
+            "プロフィールの作成に失敗しました。しばらくしてから再度お試しください。",
+        );
         return;
       }
 
