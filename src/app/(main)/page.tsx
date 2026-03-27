@@ -21,6 +21,7 @@ export default function HomePage() {
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
           <Link
             href="/consultations/new"
+            prefetch={false}
             className={cn(buttonVariants({ size: "lg" }))}
           >
             相談してみる
@@ -46,6 +47,7 @@ export default function HomePage() {
         </div>
         <Link
           href="/consultations"
+          prefetch={true}
           className={cn(buttonVariants({ variant: "link" }), "mt-6 inline-flex px-0")}
         >
           相談一覧へ

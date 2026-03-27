@@ -1,0 +1,57 @@
+name: QA Tests
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec playwright install --with-deps chromium
+
+      - name: Run E2E tests
+        run: pnpm exec playwright test
+        env:
+          BASE_URL: http://localhost:3000
+          TEST_CONSULTER_EMAIL: ${{ secrets.TEST_CONSULTER_EMAIL }}
+          TEST_CONSULTER_PASSWORD: ${{ secrets.TEST_CONSULTER_PASSWORD }}
+          TEST_ADVISOR_EMAIL: ${{ secrets.TEST_ADVISOR_EMAIL }}
+          TEST_ADVISOR_PASSWORD: ${{ secrets.TEST_ADVISOR_PASSWORD }}
+          TEST_BOTH_EMAIL: ${{ secrets.TEST_BOTH_EMAIL }}
+          TEST_BOTH_PASSWORD: ${{ secrets.TEST_BOTH_PASSWORD }}
+          TEST_ADMIN_EMAIL: ${{ secrets.TEST_ADMIN_EMAIL }}
+          TEST_ADMIN_PASSWORD: ${{ secrets.TEST_ADMIN_PASSWORD }}
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7
+
+  lighthouse:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Run Lighthouse CI (non-blocking warn mode)
+        run: pnpm dlx @lhci/cli autorun --config=.lighthouserc.json

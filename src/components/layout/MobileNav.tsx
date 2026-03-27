@@ -17,6 +17,7 @@ export function MobileNav() {
         <Link
           key={l.href}
           href={l.href}
+          prefetch={l.href === "/consultations" || l.href === "/support"}
           className="text-muted-foreground hover:text-foreground flex-1 py-2 text-center text-xs font-medium"
         >
           {l.label}

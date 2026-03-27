@@ -23,6 +23,7 @@ export function Header() {
             <Link
               key={item.href}
               href={item.href}
+              prefetch={true}
               className="text-foreground/80 hover:text-foreground transition-colors"
             >
               {item.label}

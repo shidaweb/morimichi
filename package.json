@@ -7,6 +7,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "test:e2e": "playwright test",
+    "test:e2e:headed": "playwright test --headed",
+    "test:integration:rls": "node --test tests/integration/rls-policies.test.mjs",
     "preview": "opennextjs-cloudflare preview",
     "deploy": "next build && opennextjs-cloudflare deploy",
     "cf-typegen": "wrangler types"
@@ -32,14 +35,17 @@
     "zod": "^4.3.6"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.11.1",
     "@cloudflare/workers-types": "^4.20260317.1",
     "@opennextjs/cloudflare": "^1.17.3",
+    "@playwright/test": "^1.58.2",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.2.1",
+    "playwright": "^1.58.2",
     "tailwindcss": "^4",
     "typescript": "^5",
     "wrangler": "^4.77.0"

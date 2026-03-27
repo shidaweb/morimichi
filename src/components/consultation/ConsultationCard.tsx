@@ -18,7 +18,7 @@ export function ConsultationCard({ item }: Props) {
   const phase = item.phase;
   return (
     <article className="border-border hover:border-primary/30 group rounded-xl border bg-card/60 p-4 transition-colors">
-      <Link href={`/consultations/${item.id}`} className="block space-y-3">
+      <Link href={`/consultations/${item.id}`} prefetch={true} className="block space-y-3">
         <div className="flex flex-wrap items-center gap-2">
           {phase ? (
             <Badge variant="secondary" className="font-normal">
