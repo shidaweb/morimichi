@@ -86,6 +86,12 @@ export default async function MyPage() {
           プロフィール情報をまだ読み込めていません。ニックネームを入力して保存すると表示名が登録されます。
         </p>
       ) : null}
+      <div className="border-border space-y-1 rounded-xl border bg-card/40 px-4 py-3">
+        <p className="text-muted-foreground text-sm">今のニックネーム</p>
+        <p className="text-base font-semibold tracking-tight">
+          {profile?.nickname?.trim() ? profile.nickname : "未設定"}
+        </p>
+      </div>
       <NicknameForm
         key={profile?.nickname ?? "new"}
         initialNickname={profile?.nickname ?? ""}

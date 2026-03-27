@@ -56,14 +56,14 @@ export function NicknameForm({ initialNickname }: Props) {
   return (
     <section className="border-border space-y-4 rounded-xl border p-6">
       <div>
-        <h2 className="text-lg font-semibold tracking-tight">ニックネーム</h2>
+        <h2 className="text-lg font-semibold tracking-tight">ニックネームを変更する</h2>
         <p className="text-muted-foreground mt-1 text-sm leading-relaxed">
-          相談や返信に表示される名前です（2〜20文字）。メールアドレスは公開されません。
+          相談や返信に表示される名前です（2〜20文字）。メールアドレスは公開されません。変更する場合には以下に入力して保存を押してください。
         </p>
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="mypage-nickname">表示名</Label>
+        <Label htmlFor="mypage-nickname">ニックネーム</Label>
         <Input
           id="mypage-nickname"
           autoComplete="nickname"

@@ -1,3 +1,4 @@
+@import url("https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;600;700&display=swap");
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
@@ -49,6 +50,8 @@
 }
 
 :root {
+  --font-sans: "Noto Sans JP", ui-sans-serif, system-ui, sans-serif,
+    "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
   /* クリーム #F5F0E8 / 深緑 #2D5A3D / テラコッタ #C67B5C */
   --background: #f5f0e8;
   --foreground: #1c2a22;

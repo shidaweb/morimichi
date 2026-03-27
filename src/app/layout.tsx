@@ -1,15 +1,8 @@
 import type { Metadata } from "next";
-import { Noto_Sans_JP } from "next/font/google";
 
 import "./globals.css";
 
 import { SITE_NAME } from "@/lib/constants";
-
-const notoSansJp = Noto_Sans_JP({
-  subsets: ["latin"],
-  variable: "--font-sans",
-  display: "swap",
-});
 
 export const metadata: Metadata = {
   title: {
@@ -26,7 +19,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ja" className={`${notoSansJp.variable} h-full antialiased`}>
+    <html lang="ja" className="h-full antialiased">
       <body className="bg-background text-foreground min-h-full font-sans">
         {children}
       </body>
