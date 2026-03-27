@@ -42,7 +42,9 @@ function nicknameFromMetadata(user: User): string {
       if (t.length > 20) return t.slice(0, 20);
     }
   }
-  return `user_${user.id.replace(/-/g, "").slice(0, 12)}`;
+  const digits = () =>
+    Array.from({ length: 6 }, () => String(Math.floor(Math.random() * 10))).join("");
+  return `利用者${digits()}`;
 }
 
 /** Build profile row from auth user_metadata (set at signUp via options.data). */

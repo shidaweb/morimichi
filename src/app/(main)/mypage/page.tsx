@@ -1,15 +1,36 @@
 import Link from "next/link";
 
-import { NicknameForm } from "@/components/mypage/NicknameForm";
+import { updateNicknameFromMyPage } from "./actions";
 import { NotificationSettingsForm } from "@/components/mypage/NotificationSettingsForm";
 import { buttonVariants } from "@/components/ui/button-variants";
 import { ensureProfileForUser } from "@/lib/profile/bootstrap-from-auth-metadata";
+import { isProvisionalSystemNickname } from "@/lib/profile/provisional-nickname";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { cn } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
-export default async function MyPage() {
+const inputClassName = cn(
+  "h-8 w-full min-w-0 rounded-lg border border-input bg-transparent px-2.5 py-1 text-base transition-colors outline-none",
+  "placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50",
+  "md:text-sm dark:bg-input/30",
+);
+
+type Props = {
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
+};
+
+export default async function MyPage({ searchParams }: Props) {
+  const sp = (await searchParams) ?? {};
+  const nickOk = sp.nick_ok === "1";
+  const nickErrorRaw = sp.nick_error;
+  const nickError =
+    typeof nickErrorRaw === "string"
+      ? nickErrorRaw
+      : Array.isArray(nickErrorRaw)
+        ? nickErrorRaw[0]
+        : undefined;
+
   let supabase;
   try {
     supabase = await createServerSupabaseClient();
@@ -72,6 +93,11 @@ export default async function MyPage() {
     }
   }
 
+  const rawNick = profile?.nickname?.trim() ?? "";
+  const provisionalNick = isProvisionalSystemNickname(rawNick);
+  const showEmptyInput = provisionalNick || !rawNick;
+  const defaultInputValue = showEmptyInput ? "" : rawNick;
+
   return (
     <div className="mx-auto max-w-2xl space-y-8">
       <div className="space-y-2">
@@ -82,20 +108,85 @@ export default async function MyPage() {
       </div>
 
       {!profile ? (
-        <p className="text-muted-foreground text-xs">
-          プロフィール情報をまだ読み込めていません。ニックネームを入力して保存すると表示名が登録されます。
+        <p className="text-muted-foreground text-xs leading-relaxed">
+          プロフィールを読み込み中です。登録時のニックネームは、作成後に相談・返信の表示名として使われます。読み込みが終わらない場合は、下のフォームに表示名を入力して保存してください。
         </p>
-      ) : null}
+      ) : (
+        <p className="text-muted-foreground text-sm leading-relaxed">
+          <strong className="font-medium text-foreground">登録時に入力したニックネーム</strong>
+          が、相談の投稿・返信・スレッド上での表示名として使われます。表示を変えたいときは、下のフォームからいつでも更新できます（中身は同じ「ニックネーム」データです）。
+        </p>
+      )}
       <div className="border-border space-y-1 rounded-xl border bg-card/40 px-4 py-3">
-        <p className="text-muted-foreground text-sm">今のニックネーム</p>
-        <p className="text-base font-semibold tracking-tight">
-          {profile?.nickname?.trim() ? profile.nickname : "未設定"}
-        </p>
+        <p className="text-muted-foreground text-sm">いま表示に使っているニックネーム</p>
+        {provisionalNick || !rawNick ? (
+          <div className="space-y-1">
+            <p className="text-base font-semibold tracking-tight">未登録（要設定）</p>
+            <p className="text-muted-foreground text-xs leading-relaxed">
+              登録フォームで決めた名前がまだ反映されていない場合があります。下のフォームに、相談・返信で使いたいニックネームを入力して保存してください。
+            </p>
+          </div>
+        ) : (
+          <p className="text-base font-semibold tracking-tight">{rawNick}</p>
+        )}
       </div>
-      <NicknameForm
-        key={profile?.nickname ?? "new"}
-        initialNickname={profile?.nickname ?? ""}
-      />
+
+      <section
+        className="border-border space-y-4 rounded-xl border p-6"
+        aria-labelledby="mypage-nickname-change-heading"
+      >
+        <div>
+          <h2
+            id="mypage-nickname-change-heading"
+            className="text-lg font-semibold tracking-tight"
+          >
+            ニックネームを変更する
+          </h2>
+          {provisionalNick || !rawNick ? (
+            <p className="text-muted-foreground mt-1 text-sm leading-relaxed">
+              相談・返信に載せるニックネーム（2〜20文字）を入力して保存してください。メールアドレスが公開されることはありません。
+            </p>
+          ) : (
+            <p className="text-muted-foreground mt-1 text-sm leading-relaxed">
+              登録時と同じ項目です。ここで保存した内容が、相談の投稿・返信などの表示名としてすぐに反映されます。変更したいときは下に入力して保存してください（2〜20文字）。メールアドレスは公開されません。
+            </p>
+          )}
+        </div>
+
+        <form action={updateNicknameFromMyPage} className="space-y-4">
+          {nickOk ? (
+            <p className="text-muted-foreground text-sm" role="status">
+              保存しました。
+            </p>
+          ) : null}
+          {nickError ? (
+            <p className="text-destructive text-sm" role="alert">
+              {nickError}
+            </p>
+          ) : null}
+
+          <div className="space-y-2">
+            <label htmlFor="mypage-nickname" className="text-sm font-medium">
+              ニックネーム
+            </label>
+            <input
+              id="mypage-nickname"
+              name="nickname"
+              type="text"
+              autoComplete="nickname"
+              maxLength={20}
+              defaultValue={defaultInputValue}
+              placeholder={showEmptyInput ? "例: ツバメタロウ" : undefined}
+              className={inputClassName}
+              aria-required={showEmptyInput}
+            />
+          </div>
+
+          <button type="submit" className={buttonVariants({ size: "default" })}>
+            保存
+          </button>
+        </form>
+      </section>
 
       <NotificationSettingsForm
         initial={{
