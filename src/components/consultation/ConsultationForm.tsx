@@ -14,6 +14,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useSupabaseBrowser } from "@/hooks/useSupabaseBrowser";
+import {
+  CONSULTATION_FORM_NEXT_HINT,
+  CONSULTATION_FORM_STEP_TITLE,
+  CONSULTATION_FORM_STEP_TOTAL,
+  consultationFormStepIndex,
+} from "@/lib/consultation-form-steps";
 import { cn } from "@/lib/utils";
 import type { Database } from "@/types/database";
 
@@ -25,6 +31,21 @@ type Props = {
 };
 
 type Step = 1 | 2 | 3 | 4 | "preview";
+
+function ConsultationStepHeader({ step }: { step: Step }) {
+  const idx = consultationFormStepIndex(step);
+  return (
+    <div className="border-border/80 space-y-1.5 border-b pb-4">
+      <p className="text-sm font-semibold tracking-tight">
+        ステップ {idx} / {CONSULTATION_FORM_STEP_TOTAL} — {CONSULTATION_FORM_STEP_TITLE[step]}
+      </p>
+      <p className="text-muted-foreground text-sm leading-relaxed">
+        <span className="text-foreground font-medium">次は：</span>
+        {CONSULTATION_FORM_NEXT_HINT[step]}
+      </p>
+    </div>
+  );
+}
 
 export function ConsultationForm({ phases }: Props) {
   const router = useRouter();
@@ -177,20 +198,24 @@ export function ConsultationForm({ phases }: Props) {
       ) : null}
 
       {step === 1 ? (
-        <PhaseSelector
-          phases={phases}
-          value={phaseId}
-          onChange={(id) => {
-            setPhaseId(id);
-            setConcernIds([]);
-            setConcerns([]);
-          }}
-          disabled={busy}
-        />
+        <div className="space-y-4">
+          <ConsultationStepHeader step={1} />
+          <PhaseSelector
+            phases={phases}
+            value={phaseId}
+            onChange={(id) => {
+              setPhaseId(id);
+              setConcernIds([]);
+              setConcerns([]);
+            }}
+            disabled={busy}
+          />
+        </div>
       ) : null}
 
       {step === 2 ? (
         <div className="space-y-4">
+          <ConsultationStepHeader step={2} />
           <ConcernSelector
             concerns={concerns}
             value={concernIds}
@@ -204,8 +229,8 @@ export function ConsultationForm({ phases }: Props) {
       ) : null}
 
       {step === 3 ? (
-        <div className="space-y-3">
-          <p className="text-sm font-medium">Step 3 — タイトル（100文字以内）</p>
+        <div className="space-y-4">
+          <ConsultationStepHeader step={3} />
           <Label htmlFor="ct-title" className="sr-only">
             タイトル
           </Label>
@@ -225,7 +250,7 @@ export function ConsultationForm({ phases }: Props) {
 
       {step === 4 ? (
         <div className="space-y-4">
-          <p className="text-sm font-medium">Step 4 — 本文（10,000文字以内）</p>
+          <ConsultationStepHeader step={4} />
           <Alert>
             <AlertTitle>投稿前のお願い</AlertTitle>
             <AlertDescription className="space-y-2 text-sm leading-relaxed">
@@ -257,7 +282,7 @@ export function ConsultationForm({ phases }: Props) {
 
       {step === "preview" ? (
         <div className="border-border space-y-4 rounded-xl border bg-card/40 p-5">
-          <p className="text-sm font-medium">プレビュー</p>
+          <ConsultationStepHeader step="preview" />
           {selectedPhase ? (
             <p className="text-muted-foreground text-sm">
               <span className="mr-1">{selectedPhase.icon}</span>

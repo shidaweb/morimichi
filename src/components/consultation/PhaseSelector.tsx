@@ -15,7 +15,6 @@ type Props = {
 export function PhaseSelector({ phases, value, onChange, disabled }: Props) {
   return (
     <div className="space-y-3">
-      <p className="text-sm font-medium">Step 1 — いちばん近いフェーズを選ぶ</p>
       <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
         {phases.map((p) => {
           const selected = value === p.id;

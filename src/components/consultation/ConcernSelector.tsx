@@ -47,7 +47,6 @@ export function ConcernSelector({ concerns, value, onChange, disabled }: Props) 
 
   return (
     <div className="space-y-3">
-      <p className="text-sm font-medium">Step 2 — 困りごと（複数選択）</p>
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger
           nativeButton={false}
