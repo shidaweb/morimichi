@@ -8,6 +8,10 @@ import { ConsultationDetailClient } from "@/components/consultation/Consultation
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button-variants";
 import { fetchConsultationRepliesData } from "@/lib/consultation-replies-data";
+import {
+  fetchProSpecialtyBadgeMap,
+  resolveProBadge,
+} from "@/lib/pro/pro-specialty-badge";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { cn } from "@/lib/utils";
 import type { ConsultationAuthorSummary } from "@/types/consultations";
@@ -81,15 +85,27 @@ export default async function ConsultationDetailPage({ params }: Props) {
   if (row.user_id) {
     const { data: authorProfile } = await supabase
       .from("profiles")
-      .select("nickname, avatar_url, is_profile_public, role")
+      .select(
+        "nickname, avatar_url, is_profile_public, role, is_certified_pro, pro_specialty",
+      )
       .eq("user_id", row.user_id)
       .maybeSingle();
     if (authorProfile) {
+      const isCertified = Boolean(authorProfile.is_certified_pro);
+      const badgeMap = await fetchProSpecialtyBadgeMap(supabase, [
+        authorProfile.pro_specialty,
+      ]);
       consultationAuthor = {
         nickname: authorProfile.nickname,
         avatar_url: authorProfile.avatar_url,
         is_profile_public: authorProfile.is_profile_public,
         role: authorProfile.role as UserRole,
+        is_certified_pro: isCertified,
+        pro_specialty: resolveProBadge(
+          isCertified,
+          authorProfile.pro_specialty,
+          badgeMap,
+        ),
       };
     }
   }

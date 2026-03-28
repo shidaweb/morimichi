@@ -3,7 +3,9 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { ActivityStats } from "@/components/profile/activity-stats";
+import { PublicProfileContact } from "@/components/profile/public-profile-contact";
 import { Badge } from "@/components/ui/badge";
+import { CertifiedProBadge } from "@/components/ui/certified-pro-badge";
 import { buttonVariants } from "@/components/ui/button-variants";
 import { UserAvatar } from "@/components/ui/user-avatar";
 import { fetchPublicProfileRecentReplies } from "@/lib/profile/public-profile-replies";
@@ -75,6 +77,17 @@ export default async function PublicUserProfilePage({ params }: Props) {
 
   const recent = await fetchPublicProfileRecentReplies(supabase, user_id, 5);
 
+  const { data: pubArticles } = await supabase
+    .from("articles")
+    .select("id, title, published_at")
+    .eq("author_user_id", user_id)
+    .eq("status", "published")
+    .order("published_at", { ascending: false, nullsFirst: false })
+    .limit(8);
+
+  const showContact =
+    Boolean(user && user.id !== user_id && profile.is_certified_pro);
+
   const memberDate = new Date(profile.stats.member_since).toLocaleDateString("ja-JP", {
     year: "numeric",
     month: "long",
@@ -92,6 +105,16 @@ export default async function PublicUserProfilePage({ params }: Props) {
         />
         <div className="min-w-0 flex-1 space-y-2">
           <h1 className="text-2xl font-semibold tracking-tight">{profile.nickname}</h1>
+          {profile.is_certified_pro ? (
+            <>
+              <div className="flex flex-wrap items-center gap-2">
+                <CertifiedProBadge specialty={profile.pro_specialty} size="lg" />
+              </div>
+              <p className="text-muted-foreground text-[11px] leading-relaxed">
+                公認再生プロは運営が独自に認定するものであり、国家資格などの証明ではありません。
+              </p>
+            </>
+          ) : null}
           {profile.headline ? (
             <p className="text-muted-foreground text-sm leading-relaxed">{profile.headline}</p>
           ) : null}
@@ -143,6 +166,33 @@ export default async function PublicUserProfilePage({ params }: Props) {
           </div>
         </section>
       ) : null}
+
+      {(pubArticles ?? []).length > 0 ? (
+        <section className="space-y-3">
+          <h2 className="text-sm font-semibold tracking-tight">コラム</h2>
+          <ul className="space-y-2 text-sm">
+            {(pubArticles ?? []).map((a) => (
+              <li key={a.id}>
+                <Link href={`/articles/${a.id}`} className="text-primary hover:underline">
+                  {a.title}
+                </Link>
+                {a.published_at ? (
+                  <span className="text-muted-foreground ml-2 text-xs">
+                    {new Date(a.published_at).toLocaleDateString("ja-JP")}
+                  </span>
+                ) : null}
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
+
+      <PublicProfileContact
+        targetNickname={profile.nickname}
+        targetAvatarUrl={profile.avatar_url}
+        proSpecialty={profile.pro_specialty}
+        show={showContact}
+      />
 
       <section className="space-y-3">
         <h2 className="text-sm font-semibold tracking-tight">活動実績</h2>

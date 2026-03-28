@@ -8,6 +8,8 @@ const nav = [
   { href: "/admin/reports", label: "通報" },
   { href: "/admin/consultations", label: "投稿" },
   { href: "/admin/users", label: "ユーザー" },
+  { href: "/admin/pro/applications", label: "公認プロ申請" },
+  { href: "/admin/contact-requests", label: "相談リクエスト" },
 ] as const;
 
 export default async function AdminLayout({

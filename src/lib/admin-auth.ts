@@ -26,3 +26,12 @@ export async function getModeratorContext(
 
   return { userId: user.id, role };
 }
+
+/** 管理者のみ（モデレーター不可） */
+export async function getAdminContext(
+  supabase: SupabaseClient<Database>,
+): Promise<{ userId: string } | null> {
+  const mod = await getModeratorContext(supabase);
+  if (!mod || mod.role !== "admin") return null;
+  return { userId: mod.userId };
+}

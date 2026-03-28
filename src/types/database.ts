@@ -48,6 +48,29 @@ export type SupportCategory =
   | "mental"
   | "other";
 
+export type ProSpecialty =
+  | "restructuring"
+  | "lawyer"
+  | "accountant"
+  | "sponsor"
+  | "fund"
+  | "other_expert";
+
+export type ProApplicationStatus =
+  | "pending"
+  | "approved"
+  | "rejected"
+  | "withdrawn";
+
+export type ArticleStatus = "draft" | "published" | "hidden" | "deleted";
+
+export type ContactRequestStatus =
+  | "pending"
+  | "forwarded"
+  | "responded"
+  | "closed"
+  | "rejected";
+
 export interface Database {
   public: {
     Tables: {
@@ -69,6 +92,9 @@ export interface Database {
           notification_on_reply: boolean | null;
           notification_on_reaction: boolean | null;
           notification_digest: boolean | null;
+          is_certified_pro: boolean;
+          pro_specialty: ProSpecialty | null;
+          pro_certified_at: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -89,6 +115,9 @@ export interface Database {
           notification_on_reply?: boolean | null;
           notification_on_reaction?: boolean | null;
           notification_digest?: boolean | null;
+          is_certified_pro?: boolean;
+          pro_specialty?: ProSpecialty | null;
+          pro_certified_at?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -109,6 +138,189 @@ export interface Database {
           notification_on_reply?: boolean | null;
           notification_on_reaction?: boolean | null;
           notification_digest?: boolean | null;
+          is_certified_pro?: boolean;
+          pro_specialty?: ProSpecialty | null;
+          pro_certified_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      pro_specialties: {
+        Row: {
+          id: string;
+          slug: string;
+          name: string;
+          icon: string | null;
+          description: string | null;
+          sort_order: number;
+          is_active: boolean | null;
+        };
+        Insert: {
+          id?: string;
+          slug: string;
+          name: string;
+          icon?: string | null;
+          description?: string | null;
+          sort_order?: number;
+          is_active?: boolean | null;
+        };
+        Update: {
+          id?: string;
+          slug?: string;
+          name?: string;
+          icon?: string | null;
+          description?: string | null;
+          sort_order?: number;
+          is_active?: boolean | null;
+        };
+        Relationships: [];
+      };
+      pro_applications: {
+        Row: {
+          id: string;
+          user_id: string;
+          specialty: ProSpecialty;
+          application_text: string;
+          status: ProApplicationStatus;
+          reviewer_note: string | null;
+          reviewed_at: string | null;
+          reviewed_by: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          specialty: ProSpecialty;
+          application_text: string;
+          status?: ProApplicationStatus;
+          reviewer_note?: string | null;
+          reviewed_at?: string | null;
+          reviewed_by?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          specialty?: ProSpecialty;
+          application_text?: string;
+          status?: ProApplicationStatus;
+          reviewer_note?: string | null;
+          reviewed_at?: string | null;
+          reviewed_by?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      articles: {
+        Row: {
+          id: string;
+          author_user_id: string;
+          title: string;
+          body: string;
+          summary: string | null;
+          cover_image_url: string | null;
+          tags: string[] | null;
+          status: ArticleStatus;
+          view_count: number;
+          published_at: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          author_user_id: string;
+          title: string;
+          body: string;
+          summary?: string | null;
+          cover_image_url?: string | null;
+          tags?: string[] | null;
+          status?: ArticleStatus;
+          view_count?: number;
+          published_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          author_user_id?: string;
+          title?: string;
+          body?: string;
+          summary?: string | null;
+          cover_image_url?: string | null;
+          tags?: string[] | null;
+          status?: ArticleStatus;
+          view_count?: number;
+          published_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      article_views: {
+        Row: {
+          id: string;
+          article_id: string;
+          viewer_id: string | null;
+          ip_hash: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          article_id: string;
+          viewer_id?: string | null;
+          ip_hash: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          article_id?: string;
+          viewer_id?: string | null;
+          ip_hash?: string;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      contact_requests: {
+        Row: {
+          id: string;
+          requester_user_id: string;
+          target_pro_user_id: string;
+          subject: string;
+          message: string;
+          status: ContactRequestStatus;
+          admin_note: string | null;
+          forwarded_at: string | null;
+          responded_at: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          requester_user_id: string;
+          target_pro_user_id: string;
+          subject: string;
+          message: string;
+          status?: ContactRequestStatus;
+          admin_note?: string | null;
+          forwarded_at?: string | null;
+          responded_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          requester_user_id?: string;
+          target_pro_user_id?: string;
+          subject?: string;
+          message?: string;
+          status?: ContactRequestStatus;
+          admin_note?: string | null;
+          forwarded_at?: string | null;
+          responded_at?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -482,6 +694,10 @@ export interface Database {
       report_status: ReportStatus;
       moderation_action_type: ModerationActionType;
       support_category: SupportCategory;
+      pro_specialty: ProSpecialty;
+      pro_application_status: ProApplicationStatus;
+      article_status: ArticleStatus;
+      contact_request_status: ContactRequestStatus;
     };
     CompositeTypes: Record<string, never>;
   };

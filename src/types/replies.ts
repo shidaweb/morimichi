@@ -1,5 +1,11 @@
 import type { UserRole } from "@/types/database";
 
+export type ReplyAuthorProSpecialty = {
+  slug: string;
+  name: string;
+  icon: string | null;
+};
+
 export type ReplyPublic = {
   id: string;
   consultation_id: string;
@@ -11,6 +17,8 @@ export type ReplyPublic = {
   avatar_url: string | null;
   profile_public: boolean;
   author_role: UserRole | null;
+  is_certified_pro?: boolean;
+  pro_specialty?: ReplyAuthorProSpecialty | null;
   empathyCount: number;
   hasMyEmpathy: boolean;
 };

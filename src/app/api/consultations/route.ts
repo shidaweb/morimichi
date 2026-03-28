@@ -7,6 +7,10 @@ import {
   type SortMode,
 } from "@/lib/consultation-cursor";
 import { checkRateLimit } from "@/lib/rate-limit";
+import {
+  fetchProSpecialtyBadgeMap,
+  resolveProBadge,
+} from "@/lib/pro/pro-specialty-badge";
 import { consultationCreateSchema } from "@/lib/validations/consultation";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 
@@ -106,21 +110,41 @@ export async function GET(request: NextRequest) {
       avatar_url: string | null;
       is_profile_public: boolean;
       role: string;
+      is_certified_pro: boolean;
+      pro_specialty: string | null;
     }
   >();
   if (authorUserIds.length > 0) {
     const { data: profs } = await supabase
       .from("profiles")
-      .select("user_id, nickname, avatar_url, is_profile_public, role")
+      .select(
+        "user_id, nickname, avatar_url, is_profile_public, role, is_certified_pro, pro_specialty",
+      )
       .in("user_id", authorUserIds);
     for (const p of profs ?? []) {
-      authorByUserId.set(p.user_id, p);
+      authorByUserId.set(p.user_id, {
+        nickname: p.nickname,
+        avatar_url: p.avatar_url,
+        is_profile_public: p.is_profile_public,
+        role: p.role,
+        is_certified_pro: Boolean(p.is_certified_pro),
+        pro_specialty: p.pro_specialty ?? null,
+      });
     }
   }
+
+  const badgeMap = await fetchProSpecialtyBadgeMap(
+    supabase,
+    [...authorByUserId.values()].map((a) => a.pro_specialty),
+  );
 
   return NextResponse.json({
     items: page.map((r) => {
       const ap = r.user_id ? authorByUserId.get(r.user_id) : undefined;
+      const isCertified = Boolean(ap?.is_certified_pro);
+      const pro_specialty = ap
+        ? resolveProBadge(isCertified, ap.pro_specialty, badgeMap)
+        : null;
       return {
         ...r,
         phase: phaseMap.get(r.phase_id) ?? null,
@@ -130,6 +154,8 @@ export async function GET(request: NextRequest) {
               avatar_url: ap.avatar_url,
               is_profile_public: ap.is_profile_public,
               role: ap.role,
+              is_certified_pro: isCertified,
+              pro_specialty,
             }
           : null,
       };

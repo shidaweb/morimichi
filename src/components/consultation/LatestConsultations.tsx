@@ -1,4 +1,8 @@
 import { ConsultationCard } from "@/components/consultation/ConsultationCard";
+import {
+  fetchProSpecialtyBadgeMap,
+  resolveProBadge,
+} from "@/lib/pro/pro-specialty-badge";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import type { ConsultationAuthorSummary, ConsultationListItem } from "@/types/consultations";
 import type { UserRole } from "@/types/database";
@@ -38,11 +42,21 @@ export async function LatestConsultations() {
     );
 
     const authorUserIds = [...new Set(rows.map((r) => r.user_id).filter(Boolean))] as string[];
-    const authorByUserId = new Map<string, ConsultationAuthorSummary>();
+    type RawAuthor = {
+      nickname: string;
+      avatar_url: string | null;
+      is_profile_public: boolean;
+      role: UserRole;
+      is_certified_pro: boolean;
+      pro_specialty: string | null;
+    };
+    const authorByUserId = new Map<string, RawAuthor>();
     if (authorUserIds.length > 0) {
       const { data: profs } = await supabase
         .from("profiles")
-        .select("user_id, nickname, avatar_url, is_profile_public, role")
+        .select(
+          "user_id, nickname, avatar_url, is_profile_public, role, is_certified_pro, pro_specialty",
+        )
         .in("user_id", authorUserIds);
       for (const p of profs ?? []) {
         authorByUserId.set(p.user_id, {
@@ -50,12 +64,23 @@ export async function LatestConsultations() {
           avatar_url: p.avatar_url,
           is_profile_public: p.is_profile_public,
           role: p.role as UserRole,
+          is_certified_pro: Boolean(p.is_certified_pro),
+          pro_specialty: p.pro_specialty ?? null,
         });
       }
     }
 
+    const badgeMap = await fetchProSpecialtyBadgeMap(
+      supabase,
+      [...authorByUserId.values()].map((a) => a.pro_specialty),
+    );
+
     const items: ConsultationListItem[] = rows.map((r) => {
       const ap = r.user_id ? authorByUserId.get(r.user_id) : undefined;
+      const isCertified = Boolean(ap?.is_certified_pro);
+      const pro_specialty = ap
+        ? resolveProBadge(isCertified, ap.pro_specialty, badgeMap)
+        : null;
       return {
         ...r,
         phase: phaseMap.get(r.phase_id) ?? null,
@@ -65,6 +90,8 @@ export async function LatestConsultations() {
               avatar_url: ap.avatar_url,
               is_profile_public: ap.is_profile_public,
               role: ap.role,
+              is_certified_pro: isCertified,
+              pro_specialty,
             }
           : null,
       };

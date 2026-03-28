@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { AccountRoleSwitcher } from "@/components/mypage/AccountRoleSwitcher";
+import { CertifiedProMypageSection } from "@/components/pro/certified-pro-mypage-section";
 import { NotificationSettingsForm } from "@/components/mypage/NotificationSettingsForm";
 import { ActivityHistory } from "@/components/profile/activity-history";
 import { ActivityStats } from "@/components/profile/activity-stats";
@@ -75,7 +76,7 @@ export default async function MyPage() {
   let { data: profile } = await supabase
     .from("profiles")
     .select(
-      "nickname, role, avatar_url, headline, bio, prefecture, years_of_experience, experience_phases, is_profile_public, website_url, notification_on_reply, notification_on_reaction, notification_digest, created_at",
+      "nickname, role, avatar_url, headline, bio, prefecture, years_of_experience, experience_phases, is_profile_public, website_url, notification_on_reply, notification_on_reaction, notification_digest, created_at, is_certified_pro, pro_specialty, pro_certified_at",
     )
     .eq("user_id", user.id)
     .maybeSingle();
@@ -86,7 +87,7 @@ export default async function MyPage() {
       const { data: p2 } = await supabase
         .from("profiles")
         .select(
-          "nickname, role, avatar_url, headline, bio, prefecture, years_of_experience, experience_phases, is_profile_public, website_url, notification_on_reply, notification_on_reaction, notification_digest, created_at",
+          "nickname, role, avatar_url, headline, bio, prefecture, years_of_experience, experience_phases, is_profile_public, website_url, notification_on_reply, notification_on_reaction, notification_digest, created_at, is_certified_pro, pro_specialty, pro_certified_at",
         )
         .eq("user_id", user.id)
         .maybeSingle();
@@ -202,6 +203,15 @@ export default async function MyPage() {
               </Link>
               から設定してください。
             </p>
+          ) : null}
+
+          {role === "advisor" || role === "both" || role === "admin" ? (
+            <CertifiedProMypageSection
+              role={role}
+              initialCertified={Boolean(profile.is_certified_pro)}
+              initialProCertifiedAt={profile.pro_certified_at}
+              initialProSpecialtySlug={profile.pro_specialty}
+            />
           ) : null}
 
           {profile.bio ? (

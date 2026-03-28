@@ -1,6 +1,10 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
-import type { Database } from "@/types/database";
+import {
+  fetchProSpecialtyBadgeMap,
+  resolveProBadge,
+} from "@/lib/pro/pro-specialty-badge";
+import type { Database, ProSpecialty } from "@/types/database";
 import type { ConsultationReactionsSummary, ReplyPublic } from "@/types/replies";
 
 export async function fetchConsultationRepliesData(
@@ -47,17 +51,26 @@ export async function fetchConsultationRepliesData(
     avatar_url: string | null;
     is_profile_public: boolean;
     role: string;
+    is_certified_pro: boolean;
+    pro_specialty: ProSpecialty | null;
   };
   const authorMap = new Map<string, AuthorRow>();
   if (userIds.length > 0) {
     const { data: profiles } = await supabase
       .from("profiles")
-      .select("user_id, nickname, avatar_url, is_profile_public, role")
+      .select(
+        "user_id, nickname, avatar_url, is_profile_public, role, is_certified_pro, pro_specialty",
+      )
       .in("user_id", userIds);
     for (const p of profiles ?? []) {
       authorMap.set(p.user_id, p as AuthorRow);
     }
   }
+
+  const badgeMap = await fetchProSpecialtyBadgeMap(
+    supabase,
+    [...authorMap.values()].map((a) => a.pro_specialty),
+  );
 
   const replyIds = replies.map((r) => r.id);
   const empathyByReply = new Map<string, number>();
@@ -107,6 +120,10 @@ export async function fetchConsultationRepliesData(
 
   const payload: ReplyPublic[] = replies.map((r) => {
     const author = r.user_id ? authorMap.get(r.user_id) : undefined;
+    const isCertified = Boolean(author?.is_certified_pro);
+    const specBadge = author
+      ? resolveProBadge(isCertified, author.pro_specialty, badgeMap)
+      : null;
     return {
       id: r.id,
       consultation_id: r.consultation_id,
@@ -118,6 +135,8 @@ export async function fetchConsultationRepliesData(
       avatar_url: author?.avatar_url ?? null,
       profile_public: author?.is_profile_public ?? false,
       author_role: (author?.role as ReplyPublic["author_role"]) ?? null,
+      is_certified_pro: isCertified,
+      pro_specialty: specBadge,
       empathyCount: empathyByReply.get(r.id) ?? 0,
       hasMyEmpathy: myReplyEmpathy.has(r.id),
     };

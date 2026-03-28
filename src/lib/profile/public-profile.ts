@@ -1,6 +1,14 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
-import type { Database, UserRole } from "@/types/database";
+import type { Database, ProSpecialty, UserRole } from "@/types/database";
+
+import { fetchProSpecialtyBadgeMap, resolveProBadge } from "@/lib/pro/pro-specialty-badge";
+
+export type PublicProSpecialty = {
+  slug: string;
+  name: string;
+  icon: string | null;
+};
 
 export type PublicProfilePayload = {
   user_id: string;
@@ -15,6 +23,8 @@ export type PublicProfilePayload = {
   role: UserRole;
   created_at: string;
   is_profile_public: boolean;
+  is_certified_pro: boolean;
+  pro_specialty: PublicProSpecialty | null;
 };
 
 export type PublicProfileStats = {
@@ -106,12 +116,20 @@ export async function getPublicProfileWithUserId(
   const { data: profile, error } = await supabase
     .from("profiles")
     .select(
-      "user_id, nickname, avatar_url, headline, bio, prefecture, years_of_experience, experience_phases, website_url, role, is_profile_public, created_at",
+      "user_id, nickname, avatar_url, headline, bio, prefecture, years_of_experience, experience_phases, website_url, role, is_profile_public, created_at, is_certified_pro, pro_specialty",
     )
     .eq("nickname", nickname)
     .maybeSingle();
 
   if (error || !profile) return null;
+
+  const isCertified = Boolean(profile.is_certified_pro);
+  const badgeMap = await fetchProSpecialtyBadgeMap(supabase, [profile.pro_specialty]);
+  const proSpecialtyResolved = resolveProBadge(
+    isCertified,
+    profile.pro_specialty as ProSpecialty | null,
+    badgeMap,
+  );
 
   const payload: PublicProfilePayload = {
     user_id: profile.user_id,
@@ -126,6 +144,8 @@ export async function getPublicProfileWithUserId(
     role: profile.role as UserRole,
     created_at: profile.created_at,
     is_profile_public: profile.is_profile_public,
+    is_certified_pro: isCertified,
+    pro_specialty: proSpecialtyResolved,
   };
 
   if (!canViewPublicProfile(payload, viewer)) {
@@ -145,6 +165,8 @@ export async function getPublicProfileWithUserId(
     experience_phases: payload.experience_phases,
     website_url: payload.website_url,
     role: payload.role,
+    is_certified_pro: payload.is_certified_pro,
+    pro_specialty: payload.pro_specialty,
     stats,
   };
 }

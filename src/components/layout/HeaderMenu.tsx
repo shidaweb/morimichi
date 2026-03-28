@@ -6,6 +6,7 @@ import { useCallback, useEffect, useId, useRef, useState, useSyncExternalStore }
 import { createPortal } from "react-dom";
 
 import { Button } from "@/components/ui/button";
+import { CertifiedProBadge } from "@/components/ui/certified-pro-badge";
 import { UserAvatar } from "@/components/ui/user-avatar";
 import { clearAuthCookies } from "@/lib/auth/sync-session";
 import { useAuth } from "@/hooks/useAuth";
@@ -14,6 +15,8 @@ import { cn } from "@/lib/utils";
 
 const NAV_ITEMS = [
   { href: "/consultations", label: "相談一覧", prefetch: true as const },
+  { href: "/articles", label: "プロのコラム", prefetch: true as const },
+  { href: "/pro", label: "プロ一覧", prefetch: true as const },
   { href: "/support", label: "支援リンク", prefetch: true as const },
   { href: "/sponsors", label: "もりみちスポンサー一覧", prefetch: true as const },
 ];
@@ -127,7 +130,12 @@ export function HeaderMenu() {
   const supabase = useSupabaseBrowser();
   const menuId = useId();
 
-  const [me, setMe] = useState<{ nickname: string; avatar_url: string | null } | null>(null);
+  const [me, setMe] = useState<{
+    nickname: string;
+    avatar_url: string | null;
+    is_certified_pro?: boolean;
+    pro_specialty?: { slug: string; name: string; icon: string | null } | null;
+  } | null>(null);
 
   useEffect(() => {
     if (!user) return;
@@ -136,11 +144,18 @@ export function HeaderMenu() {
       try {
         const res = await fetch("/api/users/me", { credentials: "include" });
         if (!res.ok) return;
-        const j = (await res.json()) as { nickname?: string; avatar_url?: string | null };
+        const j = (await res.json()) as {
+          nickname?: string;
+          avatar_url?: string | null;
+          is_certified_pro?: boolean;
+          pro_specialty?: { slug: string; name: string; icon: string | null } | null;
+        };
         if (!cancelled) {
           setMe({
             nickname: typeof j.nickname === "string" ? j.nickname : "",
             avatar_url: j.avatar_url ?? null,
+            is_certified_pro: Boolean(j.is_certified_pro),
+            pro_specialty: j.pro_specialty ?? null,
           });
         }
       } catch {
@@ -252,10 +267,19 @@ export function HeaderMenu() {
                   href="/mypage"
                   prefetch={false}
                   onClick={close}
-                  className="hover:bg-muted/80 flex items-center gap-3 rounded-lg px-3 py-3 transition-colors"
+                  className="hover:bg-muted/80 flex flex-wrap items-center gap-2 rounded-lg px-3 py-3 transition-colors"
                 >
                   <UserAvatar avatarUrl={displayMe?.avatar_url} nickname={nick} size="md" />
-                  <span className="font-medium">マイページ</span>
+                  <div className="flex min-w-0 flex-1 flex-col gap-1">
+                    <span className="font-medium">マイページ</span>
+                    {displayMe?.is_certified_pro ? (
+                      <CertifiedProBadge
+                        specialty={displayMe.pro_specialty ?? null}
+                        size="sm"
+                        showSpecialty={false}
+                      />
+                    ) : null}
+                  </div>
                 </Link>
                 <Button
                   type="button"

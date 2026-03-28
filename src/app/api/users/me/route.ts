@@ -21,7 +21,7 @@ export async function GET() {
 
   let { data: profile } = await supabase
     .from("profiles")
-    .select("nickname, avatar_url")
+    .select("nickname, avatar_url, is_certified_pro, pro_specialty")
     .eq("user_id", user.id)
     .maybeSingle();
 
@@ -30,16 +30,31 @@ export async function GET() {
     if (bootErr === null) {
       const { data: p2 } = await supabase
         .from("profiles")
-        .select("nickname, avatar_url")
+        .select("nickname, avatar_url, is_certified_pro, pro_specialty")
         .eq("user_id", user.id)
         .maybeSingle();
       profile = p2;
     }
   }
 
+  const isCertified = Boolean(profile?.is_certified_pro);
+  let pro_specialty: { slug: string; name: string; icon: string | null } | null = null;
+  if (isCertified && profile?.pro_specialty) {
+    const { data: s } = await supabase
+      .from("pro_specialties")
+      .select("slug, name, icon")
+      .eq("slug", profile.pro_specialty)
+      .maybeSingle();
+    pro_specialty = s
+      ? { slug: s.slug, name: s.name, icon: s.icon }
+      : { slug: profile.pro_specialty, name: profile.pro_specialty, icon: null };
+  }
+
   return NextResponse.json({
     nickname: profile?.nickname ?? "",
     avatar_url: profile?.avatar_url ?? null,
+    is_certified_pro: isCertified,
+    pro_specialty,
   });
 }
 

@@ -6,6 +6,7 @@ import { useState } from "react";
 import { ReactionButton } from "@/components/common/ReactionButton";
 import { ReportButton } from "@/components/common/ReportButton";
 import { ReplyForm } from "@/components/thread/ReplyForm";
+import { CertifiedProBadge } from "@/components/ui/certified-pro-badge";
 import { UserAvatar } from "@/components/ui/user-avatar";
 import { canShowPublicProfileLink } from "@/lib/profile/profile-link";
 import type { ReplyNode } from "@/lib/reply-tree";
@@ -62,6 +63,13 @@ function ReplyItem({
           ) : (
             <span className="font-medium text-foreground">{node.nickname ?? "匿名"}</span>
           )}
+          {node.is_certified_pro ? (
+            <CertifiedProBadge
+              specialty={node.pro_specialty ?? null}
+              size={node.depth === 1 ? "md" : "sm"}
+              showSpecialty={node.depth === 1}
+            />
+          ) : null}
           <time dateTime={node.created_at}>
             {new Date(node.created_at).toLocaleString("ja-JP", {
               dateStyle: "medium",
