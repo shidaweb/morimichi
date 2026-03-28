@@ -15,9 +15,6 @@ export function Footer() {
           <Link href="/privacy" className="hover:text-foreground underline-offset-4 hover:underline">
             プライバシー
           </Link>
-          <Link href="/tokushoho" className="hover:text-foreground underline-offset-4 hover:underline">
-            特定商取引法に基づく表記
-          </Link>
         </div>
       </div>
     </footer>
