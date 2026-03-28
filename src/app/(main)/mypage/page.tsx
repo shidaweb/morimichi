@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-import { updateNicknameFromMyPage } from "./actions";
+import { NicknameEditor } from "@/components/mypage/NicknameEditor";
 import { NotificationSettingsForm } from "@/components/mypage/NotificationSettingsForm";
 import { buttonVariants } from "@/components/ui/button-variants";
 import { ensureProfileForUser } from "@/lib/profile/bootstrap-from-auth-metadata";
@@ -12,27 +12,7 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 export const fetchCache = "force-no-store";
 
-const inputClassName = cn(
-  "h-8 w-full min-w-0 rounded-lg border border-input bg-transparent px-2.5 py-1 text-base transition-colors outline-none",
-  "placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50",
-  "md:text-sm dark:bg-input/30",
-);
-
-type Props = {
-  searchParams?: Promise<Record<string, string | string[] | undefined>>;
-};
-
-export default async function MyPage({ searchParams }: Props) {
-  const sp = (await searchParams) ?? {};
-  const nickOk = sp.nick_ok === "1";
-  const nickErrorRaw = sp.nick_error;
-  const nickError =
-    typeof nickErrorRaw === "string"
-      ? nickErrorRaw
-      : Array.isArray(nickErrorRaw)
-        ? nickErrorRaw[0]
-        : undefined;
-
+export default async function MyPage() {
   let supabase;
   try {
     supabase = await createServerSupabaseClient();
@@ -98,7 +78,6 @@ export default async function MyPage({ searchParams }: Props) {
   const rawNick = profile?.nickname?.trim() ?? "";
   const provisionalNick = isProvisionalSystemNickname(rawNick);
   const showEmptyInput = provisionalNick || !rawNick;
-  const defaultInputValue = showEmptyInput ? "" : rawNick;
 
   return (
     <div className="mx-auto max-w-2xl space-y-8">
@@ -155,39 +134,11 @@ export default async function MyPage({ searchParams }: Props) {
           )}
         </div>
 
-        <form action={updateNicknameFromMyPage} className="space-y-4">
-          {nickOk ? (
-            <p className="text-muted-foreground text-sm" role="status">
-              保存しました。
-            </p>
-          ) : null}
-          {nickError ? (
-            <p className="text-destructive text-sm" role="alert">
-              {nickError}
-            </p>
-          ) : null}
-
-          <div className="space-y-2">
-            <label htmlFor="mypage-nickname" className="text-sm font-medium">
-              ニックネーム
-            </label>
-            <input
-              id="mypage-nickname"
-              name="nickname"
-              type="text"
-              autoComplete="nickname"
-              maxLength={20}
-              defaultValue={defaultInputValue}
-              placeholder={showEmptyInput ? "例: ツバメタロウ" : undefined}
-              className={inputClassName}
-              aria-required={showEmptyInput}
-            />
-          </div>
-
-          <button type="submit" className={buttonVariants({ size: "default" })}>
-            保存
-          </button>
-        </form>
+        <NicknameEditor
+          key={`${user.id}|${provisionalNick ? "p" : "ok"}|${encodeURIComponent(rawNick)}`}
+          initialNickname={profile?.nickname ?? ""}
+          startWithEmptyInput={showEmptyInput}
+        />
       </section>
 
       <NotificationSettingsForm
