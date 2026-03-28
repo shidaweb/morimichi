@@ -35,13 +35,9 @@ type Step = 1 | 2 | 3 | 4 | "preview";
 function ConsultationStepHeader({ step }: { step: Step }) {
   const idx = consultationFormStepIndex(step);
   return (
-    <div className="border-border/80 space-y-1.5 border-b pb-4">
+    <div className="border-border/80 border-b pb-4">
       <p className="text-sm font-semibold tracking-tight">
         ステップ {idx} / {CONSULTATION_FORM_STEP_TOTAL} — {CONSULTATION_FORM_STEP_TITLE[step]}
-      </p>
-      <p className="text-muted-foreground text-sm leading-relaxed">
-        <span className="text-foreground font-medium">次は：</span>
-        {CONSULTATION_FORM_NEXT_HINT[step]}
       </p>
     </div>
   );
@@ -304,24 +300,30 @@ export function ConsultationForm({ phases }: Props) {
         </div>
       ) : null}
 
-      <div className="flex flex-wrap gap-3">
-        {step !== 1 ? (
-          <Button type="button" variant="outline" onClick={goBack} disabled={busy}>
-            戻る
-          </Button>
-        ) : null}
-        {step !== "preview" ? (
-          <Button type="button" onClick={goNext} disabled={busy}>
-            次へ
-          </Button>
-        ) : (
-          <Button type="button" onClick={() => void onSubmit()} disabled={busy}>
-            {submitting ? "送信中…" : "この内容で投稿する"}
-          </Button>
-        )}
-        <Link href="/consultations" className={cn(buttonVariants({ variant: "ghost" }))}>
-          一覧へ
-        </Link>
+      <div className="space-y-3 pt-2">
+        <p className="bg-muted/60 text-muted-foreground rounded-lg px-3 py-2.5 text-sm leading-relaxed">
+          <span className="text-foreground font-medium">次は：</span>
+          {CONSULTATION_FORM_NEXT_HINT[step]}
+        </p>
+        <div className="flex flex-wrap items-center gap-3">
+          {step !== 1 ? (
+            <Button type="button" variant="outline" onClick={goBack} disabled={busy}>
+              戻る
+            </Button>
+          ) : null}
+          {step !== "preview" ? (
+            <Button type="button" onClick={goNext} disabled={busy}>
+              次へ
+            </Button>
+          ) : (
+            <Button type="button" onClick={() => void onSubmit()} disabled={busy}>
+              {submitting ? "送信中…" : "この内容で投稿する"}
+            </Button>
+          )}
+          <Link href="/consultations" className={cn(buttonVariants({ variant: "ghost" }))}>
+            一覧へ
+          </Link>
+        </div>
       </div>
     </div>
   );
