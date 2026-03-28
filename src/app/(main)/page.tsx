@@ -27,7 +27,8 @@ export default function HomePage() {
             相談してみる
           </Link>
           <Link
-            href="/register"
+            href="/consultations"
+            prefetch={true}
             className={cn(buttonVariants({ size: "lg", variant: "outline" }))}
           >
             経験を活かして回答する
