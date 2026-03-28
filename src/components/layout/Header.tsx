@@ -6,6 +6,7 @@ import { SITE_NAME } from "@/lib/constants";
 const nav = [
   { href: "/consultations", label: "相談一覧" },
   { href: "/support", label: "支援リンク" },
+  { href: "/sponsors", label: "もりみちスポンサー一覧" },
 ];
 
 export function Header() {

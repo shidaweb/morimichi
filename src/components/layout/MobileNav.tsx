@@ -1,10 +1,22 @@
 import Link from "next/link";
 
-const links = [
-  { href: "/consultations", label: "相談一覧" },
-  { href: "/support", label: "支援リンク" },
-  { href: "/login", label: "ログイン" },
+type MobileNavLink = {
+  href: string;
+  label: string;
+  title?: string;
+  prefetch?: boolean;
+};
+
+const links: MobileNavLink[] = [
+  { href: "/consultations", label: "相談一覧", prefetch: true },
+  { href: "/support", label: "支援リンク", prefetch: true },
   { href: "/register", label: "登録" },
+  {
+    href: "/sponsors",
+    label: "スポンサー",
+    title: "もりみちスポンサー一覧",
+    prefetch: true,
+  },
 ];
 
 export function MobileNav() {
@@ -17,7 +29,8 @@ export function MobileNav() {
         <Link
           key={l.href}
           href={l.href}
-          prefetch={l.href === "/consultations" || l.href === "/support"}
+          title={l.title}
+          prefetch={l.prefetch ?? false}
           className="text-muted-foreground hover:text-foreground flex-1 py-2 text-center text-xs font-medium"
         >
           {l.label}
