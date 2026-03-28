@@ -96,11 +96,44 @@ export async function GET(request: NextRequest) {
   const nextCursor =
     hasMore && last ? encodeCursor(nextCursorFromRow(last, sort)) : null;
 
+  const authorUserIds = [
+    ...new Set(page.map((r) => r.user_id).filter(Boolean)),
+  ] as string[];
+  const authorByUserId = new Map<
+    string,
+    {
+      nickname: string;
+      avatar_url: string | null;
+      is_profile_public: boolean;
+      role: string;
+    }
+  >();
+  if (authorUserIds.length > 0) {
+    const { data: profs } = await supabase
+      .from("profiles")
+      .select("user_id, nickname, avatar_url, is_profile_public, role")
+      .in("user_id", authorUserIds);
+    for (const p of profs ?? []) {
+      authorByUserId.set(p.user_id, p);
+    }
+  }
+
   return NextResponse.json({
-    items: page.map((r) => ({
-      ...r,
-      phase: phaseMap.get(r.phase_id) ?? null,
-    })),
+    items: page.map((r) => {
+      const ap = r.user_id ? authorByUserId.get(r.user_id) : undefined;
+      return {
+        ...r,
+        phase: phaseMap.get(r.phase_id) ?? null,
+        author: ap
+          ? {
+              nickname: ap.nickname,
+              avatar_url: ap.avatar_url,
+              is_profile_public: ap.is_profile_public,
+              role: ap.role,
+            }
+          : null,
+      };
+    }),
     nextCursor,
   });
 }

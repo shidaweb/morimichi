@@ -1,3 +1,5 @@
+import type { UserRole } from "@/types/database";
+
 export type ReplyPublic = {
   id: string;
   consultation_id: string;
@@ -6,6 +8,9 @@ export type ReplyPublic = {
   depth: number;
   created_at: string;
   nickname: string | null;
+  avatar_url: string | null;
+  profile_public: boolean;
+  author_role: UserRole | null;
   empathyCount: number;
   hasMyEmpathy: boolean;
 };

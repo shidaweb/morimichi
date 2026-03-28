@@ -41,14 +41,21 @@ export async function fetchConsultationRepliesData(
     ...new Set(replies.map((r) => r.user_id).filter(Boolean)),
   ] as string[];
 
-  const nickMap = new Map<string, string>();
+  type AuthorRow = {
+    user_id: string;
+    nickname: string;
+    avatar_url: string | null;
+    is_profile_public: boolean;
+    role: string;
+  };
+  const authorMap = new Map<string, AuthorRow>();
   if (userIds.length > 0) {
     const { data: profiles } = await supabase
       .from("profiles")
-      .select("user_id, nickname")
+      .select("user_id, nickname, avatar_url, is_profile_public, role")
       .in("user_id", userIds);
     for (const p of profiles ?? []) {
-      nickMap.set(p.user_id, p.nickname);
+      authorMap.set(p.user_id, p as AuthorRow);
     }
   }
 
@@ -98,17 +105,23 @@ export async function fetchConsultationRepliesData(
     hasMyEmpathy: hasMyConsultationEmpathy,
   };
 
-  const payload: ReplyPublic[] = replies.map((r) => ({
-    id: r.id,
-    consultation_id: r.consultation_id,
-    parent_reply_id: r.parent_reply_id,
-    body: r.body,
-    depth: r.depth,
-    created_at: r.created_at,
-    nickname: r.user_id ? (nickMap.get(r.user_id) ?? null) : null,
-    empathyCount: empathyByReply.get(r.id) ?? 0,
-    hasMyEmpathy: myReplyEmpathy.has(r.id),
-  }));
+  const payload: ReplyPublic[] = replies.map((r) => {
+    const author = r.user_id ? authorMap.get(r.user_id) : undefined;
+    return {
+      id: r.id,
+      consultation_id: r.consultation_id,
+      parent_reply_id: r.parent_reply_id,
+      body: r.body,
+      depth: r.depth,
+      created_at: r.created_at,
+      nickname: author?.nickname ?? null,
+      avatar_url: author?.avatar_url ?? null,
+      profile_public: author?.is_profile_public ?? false,
+      author_role: (author?.role as ReplyPublic["author_role"]) ?? null,
+      empathyCount: empathyByReply.get(r.id) ?? 0,
+      hasMyEmpathy: myReplyEmpathy.has(r.id),
+    };
+  });
 
   return { ok: true, replies: payload, consultationReaction };
 }

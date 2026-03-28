@@ -1,10 +1,13 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 
 import { ReactionButton } from "@/components/common/ReactionButton";
 import { ReportButton } from "@/components/common/ReportButton";
 import { ReplyForm } from "@/components/thread/ReplyForm";
+import { UserAvatar } from "@/components/ui/user-avatar";
+import { canShowPublicProfileLink } from "@/lib/profile/profile-link";
 import type { ReplyNode } from "@/lib/reply-tree";
 
 type Props = {
@@ -38,9 +41,27 @@ function ReplyItem({
         }
       >
         <div className="text-muted-foreground mb-2 flex flex-wrap items-center gap-2 text-xs">
-          <span className="font-medium text-foreground">
-            {node.nickname ?? "匿名"}
-          </span>
+          <UserAvatar
+            avatarUrl={node.avatar_url}
+            nickname={node.nickname ?? "?"}
+            size="md"
+            className="shrink-0"
+          />
+          {canShowPublicProfileLink({
+            nickname: node.nickname,
+            profile_public: node.profile_public,
+            author_role: node.author_role,
+          }) ? (
+            <Link
+              href={`/users/${encodeURIComponent(node.nickname!)}`}
+              className="font-medium text-foreground hover:underline"
+              prefetch={false}
+            >
+              {node.nickname}
+            </Link>
+          ) : (
+            <span className="font-medium text-foreground">{node.nickname ?? "匿名"}</span>
+          )}
           <time dateTime={node.created_at}>
             {new Date(node.created_at).toLocaleString("ja-JP", {
               dateStyle: "medium",

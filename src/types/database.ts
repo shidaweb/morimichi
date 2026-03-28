@@ -60,6 +60,12 @@ export interface Database {
           nickname: string;
           bio: string | null;
           experience_phases: string[] | null;
+          avatar_url: string | null;
+          headline: string | null;
+          prefecture: string | null;
+          years_of_experience: number | null;
+          is_profile_public: boolean;
+          website_url: string | null;
           notification_on_reply: boolean | null;
           notification_on_reaction: boolean | null;
           notification_digest: boolean | null;
@@ -74,6 +80,12 @@ export interface Database {
           nickname: string;
           bio?: string | null;
           experience_phases?: string[] | null;
+          avatar_url?: string | null;
+          headline?: string | null;
+          prefecture?: string | null;
+          years_of_experience?: number | null;
+          is_profile_public?: boolean;
+          website_url?: string | null;
           notification_on_reply?: boolean | null;
           notification_on_reaction?: boolean | null;
           notification_digest?: boolean | null;
@@ -88,6 +100,12 @@ export interface Database {
           nickname?: string;
           bio?: string | null;
           experience_phases?: string[] | null;
+          avatar_url?: string | null;
+          headline?: string | null;
+          prefecture?: string | null;
+          years_of_experience?: number | null;
+          is_profile_public?: boolean;
+          website_url?: string | null;
           notification_on_reply?: boolean | null;
           notification_on_reaction?: boolean | null;
           notification_digest?: boolean | null;

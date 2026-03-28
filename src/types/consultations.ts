@@ -1,9 +1,16 @@
-import type { ContentStatus } from "@/types/database";
+import type { ContentStatus, UserRole } from "@/types/database";
 
 export type ConsultationPhaseSummary = {
   name: string;
   slug: string;
   icon: string | null;
+};
+
+export type ConsultationAuthorSummary = {
+  nickname: string;
+  avatar_url: string | null;
+  is_profile_public: boolean;
+  role: UserRole;
 };
 
 export type ConsultationListItem = {
@@ -20,4 +27,5 @@ export type ConsultationListItem = {
   created_at: string;
   updated_at: string;
   phase: ConsultationPhaseSummary | null;
+  author: ConsultationAuthorSummary | null;
 };

@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { ConsultationAuthorRow } from "@/components/consultation/ConsultationAuthorRow";
 import { ViewCounter } from "@/components/consultation/ViewCounter";
 import { Badge } from "@/components/ui/badge";
 import type { ConsultationListItem } from "@/types/consultations";
@@ -18,6 +19,11 @@ export function ConsultationCard({ item }: Props) {
   const phase = item.phase;
   return (
     <article className="border-border hover:border-primary/30 group rounded-xl border bg-card/60 p-4 transition-colors">
+      {item.author ? (
+        <div className="mb-3">
+          <ConsultationAuthorRow author={item.author} size="md" />
+        </div>
+      ) : null}
       <Link href={`/consultations/${item.id}`} prefetch={true} className="block space-y-3">
         <div className="flex flex-wrap items-center gap-2">
           {phase ? (

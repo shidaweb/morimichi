@@ -1,6 +1,7 @@
 import { ConsultationCard } from "@/components/consultation/ConsultationCard";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
-import type { ConsultationListItem } from "@/types/consultations";
+import type { ConsultationAuthorSummary, ConsultationListItem } from "@/types/consultations";
+import type { UserRole } from "@/types/database";
 
 export async function LatestConsultations() {
   try {
@@ -36,10 +37,38 @@ export async function LatestConsultations() {
       ]),
     );
 
-    const items: ConsultationListItem[] = rows.map((r) => ({
-      ...r,
-      phase: phaseMap.get(r.phase_id) ?? null,
-    }));
+    const authorUserIds = [...new Set(rows.map((r) => r.user_id).filter(Boolean))] as string[];
+    const authorByUserId = new Map<string, ConsultationAuthorSummary>();
+    if (authorUserIds.length > 0) {
+      const { data: profs } = await supabase
+        .from("profiles")
+        .select("user_id, nickname, avatar_url, is_profile_public, role")
+        .in("user_id", authorUserIds);
+      for (const p of profs ?? []) {
+        authorByUserId.set(p.user_id, {
+          nickname: p.nickname,
+          avatar_url: p.avatar_url,
+          is_profile_public: p.is_profile_public,
+          role: p.role as UserRole,
+        });
+      }
+    }
+
+    const items: ConsultationListItem[] = rows.map((r) => {
+      const ap = r.user_id ? authorByUserId.get(r.user_id) : undefined;
+      return {
+        ...r,
+        phase: phaseMap.get(r.phase_id) ?? null,
+        author: ap
+          ? {
+              nickname: ap.nickname,
+              avatar_url: ap.avatar_url,
+              is_profile_public: ap.is_profile_public,
+              role: ap.role,
+            }
+          : null,
+      };
+    });
 
     return (
       <ul className="flex flex-col gap-4">

@@ -3,12 +3,14 @@ import { notFound } from "next/navigation";
 
 import { CrisisBanner } from "@/components/common/CrisisBanner";
 import { DisclaimerBanner } from "@/components/common/DisclaimerBanner";
+import { ConsultationAuthorRow } from "@/components/consultation/ConsultationAuthorRow";
 import { ConsultationDetailClient } from "@/components/consultation/ConsultationDetailClient";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button-variants";
 import { fetchConsultationRepliesData } from "@/lib/consultation-replies-data";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { cn } from "@/lib/utils";
+import type { ConsultationAuthorSummary } from "@/types/consultations";
 import type { Database, UserRole } from "@/types/database";
 
 type Props = { params: Promise<{ id: string }> };
@@ -75,6 +77,23 @@ export default async function ConsultationDetailPage({ params }: Props) {
     concernLabels = (concerns ?? []).map((x) => x.label);
   }
 
+  let consultationAuthor: ConsultationAuthorSummary | null = null;
+  if (row.user_id) {
+    const { data: authorProfile } = await supabase
+      .from("profiles")
+      .select("nickname, avatar_url, is_profile_public, role")
+      .eq("user_id", row.user_id)
+      .maybeSingle();
+    if (authorProfile) {
+      consultationAuthor = {
+        nickname: authorProfile.nickname,
+        avatar_url: authorProfile.avatar_url,
+        is_profile_public: authorProfile.is_profile_public,
+        role: authorProfile.role as UserRole,
+      };
+    }
+  }
+
   const repliesData = await fetchConsultationRepliesData(supabase, id);
   const initialReplies =
     repliesData.ok ? repliesData.replies : [];
@@ -120,6 +139,11 @@ export default async function ConsultationDetailPage({ params }: Props) {
         canPostTopLevel={canPostTopLevel}
         isLoggedIn={Boolean(user)}
       >
+        {consultationAuthor ? (
+          <div className="mb-4">
+            <ConsultationAuthorRow author={consultationAuthor} size="lg" />
+          </div>
+        ) : null}
         {concernLabels.length > 0 ? (
           <p className="text-muted-foreground text-sm">
             困りごと: {concernLabels.join("、")}
