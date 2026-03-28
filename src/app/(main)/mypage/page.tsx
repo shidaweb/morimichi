@@ -1,9 +1,11 @@
 import Link from "next/link";
 
+import { AccountRoleSwitcher } from "@/components/mypage/AccountRoleSwitcher";
 import { NicknameEditor } from "@/components/mypage/NicknameEditor";
 import { NotificationSettingsForm } from "@/components/mypage/NotificationSettingsForm";
 import { buttonVariants } from "@/components/ui/button-variants";
 import { ensureProfileForUser } from "@/lib/profile/bootstrap-from-auth-metadata";
+import { canChangeRoleFrom } from "@/lib/profile/update-profile-role";
 import { isProvisionalSystemNickname } from "@/lib/profile/provisional-nickname";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { cn } from "@/lib/utils";
@@ -56,7 +58,7 @@ export default async function MyPage() {
   let { data: profile } = await supabase
     .from("profiles")
     .select(
-      "nickname, notification_on_reply, notification_on_reaction, notification_digest",
+      "nickname, role, notification_on_reply, notification_on_reaction, notification_digest",
     )
     .eq("user_id", user.id)
     .maybeSingle();
@@ -67,7 +69,7 @@ export default async function MyPage() {
       const { data: p2 } = await supabase
         .from("profiles")
         .select(
-          "nickname, notification_on_reply, notification_on_reaction, notification_digest",
+          "nickname, role, notification_on_reply, notification_on_reaction, notification_digest",
         )
         .eq("user_id", user.id)
         .maybeSingle();
@@ -140,6 +142,10 @@ export default async function MyPage() {
           startWithEmptyInput={showEmptyInput}
         />
       </section>
+
+      {profile && canChangeRoleFrom(profile.role) ? (
+        <AccountRoleSwitcher currentRole={profile.role} />
+      ) : null}
 
       <NotificationSettingsForm
         initial={{
