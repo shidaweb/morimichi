@@ -11,9 +11,12 @@ WHERE id IN (
   '84160ce3-64f1-42c2-a270-0fc1b84a29eb'
 );
 
--- テストユーザーのコンタクトリクエスト（UUID は環境ごとに差し替え）
--- DELETE FROM public.contact_requests
--- WHERE requester_user_id IN (
---   '66682971-9f34-4308-92b3-fc19b5dde8fd',
---   '6aa575ff-ac3e-4848-a0ef-9877fc1fd71e'
--- );
+-- テストユーザーのコンタクトリクエスト（本番の auth.users / profiles と照合してから実行）
+DELETE FROM public.contact_requests
+WHERE requester_user_id IN (
+  '66682971-9f34-4308-92b3-fc19b5dde8fd',
+  '6aa575ff-ac3e-4848-a0ef-9877fc1fd71e'
+);
+
+-- 任意: QA 用相談も削除する場合のみコメントを外す
+-- DELETE FROM public.consultations WHERE id = '259352c5-5bc0-4078-9b21-04f5db4c111c';
