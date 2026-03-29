@@ -139,14 +139,16 @@ export async function GET(request: NextRequest) {
     if (keyword.length > 120) {
       return NextResponse.json({ error: "invalid_keyword" }, { status: 400 });
     }
+    // simple 辞書の tsvector では日本語がトークン化されないため、ILIKE + pg_trgm インデックスで検索
+    const safe = keyword.replace(/%/g, "").replace(/_/g, "").replace(/,/g, " ").trim();
+    if (!safe.length) {
+      return NextResponse.json({ items: [], nextCursor: null });
+    }
     let q = supabase
       .from("consultations")
       .select("*")
       .eq("status", "published")
-      .textSearch("title_body_search", keyword, {
-        type: "websearch",
-        config: "simple",
-      });
+      .or(`title.ilike.%${safe}%,body.ilike.%${safe}%`);
     if (phaseId) q = q.eq("phase_id", phaseId);
     if (sort === "new") q = q.order("created_at", { ascending: false });
     else if (sort === "replies") {

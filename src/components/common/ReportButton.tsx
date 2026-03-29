@@ -59,8 +59,15 @@ export function ReportButton({ targetType, targetId, isLoggedIn }: Props) {
         }),
       });
       if (!res.ok) {
-        const j = (await res.json().catch(() => ({}))) as { error?: string };
-        setError(j.error ?? "送信に失敗しました");
+        const j = (await res.json().catch(() => ({}))) as {
+          error?: string;
+          message?: string;
+        };
+        if (j.error === "duplicate_report" && j.message) {
+          setError(j.message);
+        } else {
+          setError(j.message ?? j.error ?? "送信に失敗しました");
+        }
         setPending(false);
         return;
       }

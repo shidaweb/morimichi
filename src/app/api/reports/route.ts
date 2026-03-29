@@ -17,6 +17,7 @@ const REPORT_REASON_LABEL: Record<string, string> = {
   advisor_solicitation: "回答者による勧誘",
   spam: "スパム",
   other: "その他",
+  auto_detected_contact_info: "連絡先の自動検知",
 };
 
 export async function POST(request: Request) {
@@ -87,6 +88,15 @@ export async function POST(request: Request) {
     .maybeSingle();
 
   if (error) {
+    if (error.code === "23505") {
+      return NextResponse.json(
+        {
+          error: "duplicate_report",
+          message: "同じ内容の通報が既に受付済みです。しばらくお待ちください。",
+        },
+        { status: 409 },
+      );
+    }
     console.error(error);
     return NextResponse.json({ error: "report_failed" }, { status: 500 });
   }
