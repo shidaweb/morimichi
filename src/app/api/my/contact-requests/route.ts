@@ -20,7 +20,7 @@ export async function GET() {
   const { data: rows, error } = await supabase
     .from("contact_requests")
     .select(
-      "id, target_pro_user_id, subject, message, status, created_at, forwarded_at, responded_at",
+      "id, target_user_id, subject, message, status, created_at, forwarded_at, responded_at",
     )
     .eq("requester_user_id", user.id)
     .order("created_at", { ascending: false })
@@ -31,7 +31,7 @@ export async function GET() {
     return NextResponse.json({ error: "fetch_failed" }, { status: 500 });
   }
 
-  const targetIds = [...new Set((rows ?? []).map((r) => r.target_pro_user_id))];
+  const targetIds = [...new Set((rows ?? []).map((r) => r.target_user_id))];
   const nickByUser = new Map<string, string>();
   if (targetIds.length > 0) {
     const { data: profs } = await supabase
@@ -43,7 +43,7 @@ export async function GET() {
 
   const list = (rows ?? []).map((r) => ({
     ...r,
-    target_nickname: nickByUser.get(r.target_pro_user_id) ?? "",
+    target_nickname: nickByUser.get(r.target_user_id) ?? "",
   }));
 
   return NextResponse.json({ requests: list });

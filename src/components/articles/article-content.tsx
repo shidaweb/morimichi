@@ -21,6 +21,16 @@ export function ArticleContent({ markdown, className }: Props) {
               {children}
             </a>
           ),
+          img: ({ src, alt, ...rest }) => (
+            // eslint-disable-next-line @next/next/no-img-element -- ユーザー投稿マークダウン内の画像
+            <img
+              src={src}
+              alt={alt ?? ""}
+              className="my-3 h-auto max-w-full rounded-md border"
+              loading="lazy"
+              {...rest}
+            />
+          ),
         }}
       >
         {markdown}

@@ -131,6 +131,7 @@ export async function fetchConsultationRepliesData(
       body: r.body,
       depth: r.depth,
       created_at: r.created_at,
+      author_user_id: r.user_id ?? null,
       nickname: author?.nickname ?? null,
       avatar_url: author?.avatar_url ?? null,
       profile_public: author?.is_profile_public ?? false,

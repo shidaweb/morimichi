@@ -8,12 +8,20 @@ export type ProfileBootstrapPayload = {
   nickname: string;
   role: UserRole;
   experience_phases: string[] | null;
+  is_profile_public: boolean;
 };
 
 function parseRole(meta: Record<string, unknown>): UserRole {
   const r = meta.role;
   if (r === "consulter" || r === "advisor" || r === "both") return r;
   return "consulter";
+}
+
+function parseProfilePublic(meta: Record<string, unknown>, role: UserRole): boolean {
+  if (role === "consulter") return false;
+  const v = meta.is_profile_public;
+  if (typeof v === "boolean") return v;
+  return true;
 }
 
 function parseExperiencePhases(
@@ -53,8 +61,9 @@ export function profilePayloadFromUser(user: User): ProfileBootstrapPayload {
   const role = parseRole(meta);
   const nickname = nicknameFromMetadata(user);
   const experience_phases = parseExperiencePhases(meta, role);
+  const is_profile_public = parseProfilePublic(meta, role);
 
-  return { nickname, role, experience_phases };
+  return { nickname, role, experience_phases, is_profile_public };
 }
 
 /**
@@ -84,6 +93,7 @@ export async function ensureProfileForUser(
       nickname,
       role: base.role,
       experience_phases: base.experience_phases,
+      is_profile_public: base.is_profile_public,
     });
 
     if (!error) {

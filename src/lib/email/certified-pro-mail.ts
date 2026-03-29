@@ -45,7 +45,8 @@ export async function sendContactRequestNotifyToMaster(data: {
   requesterNickname: string;
   requesterEmail: string;
   targetNickname: string;
-  targetSpecialtyName: string;
+  targetSpecialtyName: string | null;
+  targetIsCertifiedPro: boolean;
   subject: string;
   message: string;
   requestId: string;

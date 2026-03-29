@@ -13,6 +13,7 @@ export type ReplyPublic = {
   body: string;
   depth: number;
   created_at: string;
+  author_user_id: string | null;
   nickname: string | null;
   avatar_url: string | null;
   profile_public: boolean;

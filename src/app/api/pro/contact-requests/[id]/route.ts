@@ -41,7 +41,7 @@ export async function PATCH(request: Request, context: Ctx) {
 
   const { data: row, error: fe } = await supabase
     .from("contact_requests")
-    .select("id, status, requester_user_id, target_pro_user_id")
+    .select("id, status, requester_user_id, target_user_id")
     .eq("id", id)
     .maybeSingle();
 
@@ -49,7 +49,7 @@ export async function PATCH(request: Request, context: Ctx) {
     return NextResponse.json({ error: "not_found" }, { status: 404 });
   }
 
-  if (row.target_pro_user_id !== user.id) {
+  if (row.target_user_id !== user.id) {
     return NextResponse.json({ error: "forbidden" }, { status: 403 });
   }
 
@@ -81,7 +81,7 @@ export async function PATCH(request: Request, context: Ctx) {
   const { data: proProf } = await supabase
     .from("profiles")
     .select("nickname")
-    .eq("user_id", row.target_pro_user_id)
+    .eq("user_id", row.target_user_id)
     .maybeSingle();
 
   const requesterEmail = await getAuthUserEmailById(row.requester_user_id);

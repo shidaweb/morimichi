@@ -85,8 +85,9 @@ export default async function PublicUserProfilePage({ params }: Props) {
     .order("published_at", { ascending: false, nullsFirst: false })
     .limit(8);
 
-  const showContact =
-    Boolean(user && user.id !== user_id && profile.is_certified_pro);
+  const canReceiveContactRequest =
+    profile.role === "advisor" || profile.role === "both" || profile.role === "admin";
+  const showContact = Boolean(user && user.id !== user_id && canReceiveContactRequest);
 
   const memberDate = new Date(profile.stats.member_since).toLocaleDateString("ja-JP", {
     year: "numeric",
@@ -188,9 +189,11 @@ export default async function PublicUserProfilePage({ params }: Props) {
       ) : null}
 
       <PublicProfileContact
+        targetUserId={user_id}
         targetNickname={profile.nickname}
         targetAvatarUrl={profile.avatar_url}
         proSpecialty={profile.pro_specialty}
+        isCertifiedPro={profile.is_certified_pro}
         show={showContact}
       />
 

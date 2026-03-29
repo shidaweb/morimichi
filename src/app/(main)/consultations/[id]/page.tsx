@@ -13,6 +13,7 @@ import {
   resolveProBadge,
 } from "@/lib/pro/pro-specialty-badge";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { normalizeConsultationBodyForDisplay } from "@/lib/utils/consultation-body-display";
 import { cn } from "@/lib/utils";
 import type { ConsultationAuthorSummary } from "@/types/consultations";
 import type { Database, UserRole } from "@/types/database";
@@ -146,6 +147,8 @@ export default async function ConsultationDetailPage({ params }: Props) {
 
       <ConsultationDetailClient
         consultationId={id}
+        consultationOwnerUserId={row.user_id}
+        viewerUserId={user?.id ?? null}
         initialViewCount={row.view_count ?? 0}
         initialReplyCount={row.reply_count ?? 0}
         initialReactionCount={row.reaction_count ?? 0}
@@ -167,7 +170,7 @@ export default async function ConsultationDetailPage({ params }: Props) {
         ) : null}
 
         <div className="text-foreground whitespace-pre-wrap text-base leading-relaxed">
-          {row.body}
+          {normalizeConsultationBodyForDisplay(row.body)}
         </div>
       </ConsultationDetailClient>
 

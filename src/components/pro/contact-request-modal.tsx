@@ -11,17 +11,21 @@ import { cn } from "@/lib/utils";
 type Props = {
   open: boolean;
   onClose: () => void;
+  targetUserId: string;
   targetNickname: string;
   targetAvatarUrl: string | null;
   targetSpecialty: ProSpecialtyBadge | null;
+  isCertifiedPro: boolean;
 };
 
 export function ContactRequestModal({
   open,
   onClose,
+  targetUserId,
   targetNickname,
   targetAvatarUrl,
   targetSpecialty,
+  isCertifiedPro,
 }: Props) {
   const [subject, setSubject] = useState("");
   const [message, setMessage] = useState("");
@@ -41,14 +45,19 @@ export function ContactRequestModal({
         credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          target_pro_nickname: targetNickname,
+          target_user_id: targetUserId,
           subject: subject.trim(),
           message: message.trim(),
         }),
       });
       const j = (await res.json()) as { message?: string; error?: string };
       if (!res.ok) {
-        setError(j.message ?? "送信に失敗しました");
+        setError(
+          j.message ??
+            (j.error === "target_not_advisor"
+              ? "この相手には運営経由の相談を送れません。"
+              : "送信に失敗しました"),
+        );
         return;
       }
       setDone(true);
@@ -81,7 +90,7 @@ export function ContactRequestModal({
       >
         <div className="mb-4 flex items-start justify-between gap-2">
           <h2 id="contact-req-title" className="text-lg font-semibold">
-            運営を通じて相談する
+            運営を通じて {targetNickname} に相談する
           </h2>
           <Button type="button" variant="ghost" size="sm" onClick={handleClose}>
             閉じる
@@ -102,16 +111,20 @@ export function ContactRequestModal({
           </div>
         ) : (
           <>
+            <div className="border-amber-200 bg-amber-50 text-amber-950 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-100 mb-4 rounded-lg border px-3 py-2 text-xs leading-relaxed">
+              運営が内容を確認の上、相手の方におつなぎいたします。直接の連絡先交換は行いません。
+            </div>
             <div className="mb-4 flex items-start gap-3">
               <UserAvatar avatarUrl={targetAvatarUrl} nickname={targetNickname} size="lg" />
               <div className="min-w-0">
                 <p className="font-medium">{targetNickname}</p>
-                <CertifiedProBadge specialty={targetSpecialty} size="sm" />
+                {isCertifiedPro ? (
+                  <CertifiedProBadge specialty={targetSpecialty} size="sm" />
+                ) : (
+                  <p className="text-muted-foreground text-xs">回答者</p>
+                )}
               </div>
             </div>
-            <p className="text-muted-foreground mb-4 text-xs leading-relaxed">
-              この相談は運営（もりみち事務局）を通じてお伝えします。直接の連絡先交換は行いません。
-            </p>
             <form onSubmit={(e) => void onSubmit(e)} className="space-y-4">
               <div className="space-y-2">
                 <label htmlFor="cr-subject" className="text-sm font-medium">
@@ -131,7 +144,7 @@ export function ContactRequestModal({
               </div>
               <div className="space-y-2">
                 <label htmlFor="cr-msg" className="text-sm font-medium">
-                  ご相談内容（2000文字以内）
+                  相談内容（2000文字以内）
                 </label>
                 <textarea
                   id="cr-msg"
@@ -148,9 +161,20 @@ export function ContactRequestModal({
                 <p className="text-muted-foreground text-xs">{message.length} / 2000文字</p>
               </div>
               {error ? <p className="text-destructive text-sm">{error}</p> : null}
-              <Button type="submit" className="w-full" disabled={submitting}>
-                相談リクエストを送信する
-              </Button>
+              <div className="flex flex-wrap gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="flex-1"
+                  onClick={handleClose}
+                  disabled={submitting}
+                >
+                  キャンセル
+                </Button>
+                <Button type="submit" className="flex-1" disabled={submitting}>
+                  送信する
+                </Button>
+              </div>
             </form>
           </>
         )}

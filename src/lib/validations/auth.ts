@@ -13,6 +13,8 @@ export const registerSchema = z
       .max(20, "ニックネームは20文字以内にしてください"),
     role: z.enum(["consulter", "advisor", "both"]),
     experiencePhases: z.array(z.string()).optional(),
+    /** 回答者・両方のみ。相談者は常に false 扱い */
+    profilePublic: z.boolean().optional(),
     agreeTerms: z.boolean(),
   })
   .superRefine((data, ctx) => {

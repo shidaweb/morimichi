@@ -5,7 +5,11 @@ import { useCallback, useEffect, useState } from "react";
 import type { SortMode } from "@/lib/consultation-cursor";
 import type { ConsultationListItem } from "@/types/consultations";
 
-export function useConsultations(phaseSlug: string, sort: SortMode) {
+export function useConsultations(
+  phaseSlug: string,
+  sort: SortMode,
+  keyword: string,
+) {
   const [items, setItems] = useState<ConsultationListItem[]>([]);
   const [nextCursor, setNextCursor] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -18,16 +22,19 @@ export function useConsultations(phaseSlug: string, sort: SortMode) {
       params.set("phase", phaseSlug);
       params.set("sort", sort);
       if (opts.cursor) params.set("cursor", opts.cursor);
+      const kw = keyword.trim();
+      if (kw.length > 0) params.set("keyword", kw);
       const res = await fetch(`/api/consultations?${params.toString()}`, {
         credentials: "include",
       });
       const json = (await res.json()) as {
         error?: string;
+        message?: string;
         items?: ConsultationListItem[];
         nextCursor?: string | null;
       };
       if (!res.ok) {
-        throw new Error(json.error ?? "読み込みに失敗しました");
+        throw new Error(json.message ?? json.error ?? "読み込みに失敗しました");
       }
       const list = json.items ?? [];
       if (opts.append) {
@@ -37,29 +44,32 @@ export function useConsultations(phaseSlug: string, sort: SortMode) {
       }
       setNextCursor(json.nextCursor ?? null);
     },
-    [phaseSlug, sort],
+    [phaseSlug, sort, keyword],
   );
 
   useEffect(() => {
     let cancelled = false;
-    void (async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        await fetchPage({ append: false, cursor: null });
-      } catch (e) {
-        if (!cancelled) setError(e instanceof Error ? e.message : "error");
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    })();
+    const t = window.setTimeout(() => {
+      void (async () => {
+        setLoading(true);
+        setError(null);
+        try {
+          await fetchPage({ append: false, cursor: null });
+        } catch (e) {
+          if (!cancelled) setError(e instanceof Error ? e.message : "error");
+        } finally {
+          if (!cancelled) setLoading(false);
+        }
+      })();
+    }, keyword.trim().length > 0 ? 300 : 0);
     return () => {
       cancelled = true;
+      window.clearTimeout(t);
     };
-  }, [phaseSlug, sort, fetchPage]);
+  }, [phaseSlug, sort, keyword, fetchPage]);
 
   const loadMore = useCallback(async () => {
-    if (!nextCursor || loadingMore) return;
+    if (!nextCursor || loadingMore || keyword.trim().length > 0) return;
     setLoadingMore(true);
     setError(null);
     try {
@@ -68,7 +78,7 @@ export function useConsultations(phaseSlug: string, sort: SortMode) {
       setError(e instanceof Error ? e.message : "読み込みに失敗しました");
     }
     setLoadingMore(false);
-  }, [fetchPage, nextCursor, loadingMore]);
+  }, [fetchPage, nextCursor, loadingMore, keyword]);
 
   return {
     items,

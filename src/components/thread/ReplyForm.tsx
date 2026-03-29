@@ -3,8 +3,14 @@
 import { useState } from "react";
 
 import { PersonalOpinionCheck } from "@/components/thread/PersonalOpinionCheck";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  CONTACT_CONTENT_BLOCKED_MESSAGE,
+  CONTACT_CONTENT_WARNING,
+} from "@/lib/consultation-contact-warning-copy";
+import { detectContactInfo } from "@/lib/utils/content-filter";
 
 type Props = {
   consultationId: string;
@@ -32,6 +38,11 @@ export function ReplyForm({
     e.preventDefault();
     if (!isLoggedIn || pending || disabled) return;
     setError(null);
+    const contact = detectContactInfo(body);
+    if (contact.hasContactInfo) {
+      setError(CONTACT_CONTENT_BLOCKED_MESSAGE);
+      return;
+    }
     setPending(true);
     try {
       const res = await fetch(`/api/consultations/${consultationId}/replies`, {
@@ -90,6 +101,12 @@ export function ReplyForm({
 
   return (
     <form onSubmit={(e) => void submit(e)} className="space-y-3">
+      <Alert variant="default" className="border-amber-200 bg-amber-50 text-amber-950 dark:border-amber-900 dark:bg-amber-950/30 dark:text-amber-100">
+        <AlertTitle className="text-sm">ご注意</AlertTitle>
+        <AlertDescription className="text-xs leading-relaxed">
+          ⚠️ {CONTACT_CONTENT_WARNING}
+        </AlertDescription>
+      </Alert>
       {isTopLevel ? (
         <PersonalOpinionCheck checked={ack} onCheckedChange={setAck} disabled={pending} />
       ) : null}

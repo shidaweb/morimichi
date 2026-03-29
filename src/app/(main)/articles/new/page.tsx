@@ -2,9 +2,10 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { ArticleContent } from "@/components/articles/article-content";
+import { ArticleMarkdownField } from "@/components/articles/article-markdown-field";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -18,6 +19,16 @@ export default function NewArticlePage() {
   const [tab, setTab] = useState<"edit" | "preview">("edit");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isCertifiedPro, setIsCertifiedPro] = useState(false);
+
+  useEffect(() => {
+    void (async () => {
+      const res = await fetch("/api/users/me", { credentials: "include" });
+      if (!res.ok) return;
+      const j = (await res.json()) as { is_certified_pro?: boolean };
+      setIsCertifiedPro(Boolean(j.is_certified_pro));
+    })();
+  }, []);
 
   function addTag() {
     const t = tagInput.trim();
@@ -114,21 +125,15 @@ export default function NewArticlePage() {
               )}
             />
           </div>
-          <div className="space-y-2">
-            <label className="text-sm font-medium">本文（マークダウン・1万文字以内）</label>
-            <textarea
-              maxLength={10_000}
-              rows={16}
-              value={body}
-              onChange={(e) => setBody(e.target.value)}
-              className={cn(
-                "border-input bg-background font-mono text-sm leading-relaxed",
-                "min-h-[280px] w-full rounded-md border px-3 py-2",
-                "focus-visible:ring-ring focus-visible:ring-2 focus-visible:outline-none",
-              )}
-            />
-            <p className="text-muted-foreground text-xs">{body.length} / 10000文字</p>
-          </div>
+          <ArticleMarkdownField
+            id="new-article-body"
+            label="本文（マークダウン・1万文字以内）"
+            body={body}
+            setBody={setBody}
+            maxLength={10_000}
+            rows={16}
+            isCertifiedPro={isCertifiedPro}
+          />
           <div className="space-y-2">
             <span className="text-sm font-medium">タグ（最大5つ）</span>
             <div className="flex flex-wrap gap-2">

@@ -29,7 +29,8 @@ export type ReportReason =
   | "legal_advice"
   | "advisor_solicitation"
   | "spam"
-  | "other";
+  | "other"
+  | "auto_detected_contact_info";
 
 export type ReportStatus = "pending" | "reviewing" | "resolved" | "dismissed";
 
@@ -288,7 +289,7 @@ export interface Database {
         Row: {
           id: string;
           requester_user_id: string;
-          target_pro_user_id: string;
+          target_user_id: string;
           subject: string;
           message: string;
           status: ContactRequestStatus;
@@ -301,7 +302,7 @@ export interface Database {
         Insert: {
           id?: string;
           requester_user_id: string;
-          target_pro_user_id: string;
+          target_user_id: string;
           subject: string;
           message: string;
           status?: ContactRequestStatus;
@@ -314,7 +315,7 @@ export interface Database {
         Update: {
           id?: string;
           requester_user_id?: string;
-          target_pro_user_id?: string;
+          target_user_id?: string;
           subject?: string;
           message?: string;
           status?: ContactRequestStatus;

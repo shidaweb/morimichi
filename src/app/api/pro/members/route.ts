@@ -88,6 +88,7 @@ export async function GET(request: Request) {
   }
 
   type Member = {
+    user_id: string;
     nickname: string;
     avatar_url: string | null;
     headline: string | null;
@@ -130,6 +131,7 @@ export async function GET(request: Request) {
     );
 
     enriched.push({
+      user_id: r.user_id,
       nickname: r.nickname,
       avatar_url: r.avatar_url,
       headline: r.headline,

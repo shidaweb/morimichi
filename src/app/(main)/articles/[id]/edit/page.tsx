@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import { ArticleContent } from "@/components/articles/article-content";
+import { ArticleMarkdownField } from "@/components/articles/article-markdown-field";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -22,6 +23,16 @@ export default function EditArticlePage() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isCertifiedPro, setIsCertifiedPro] = useState(false);
+
+  useEffect(() => {
+    void (async () => {
+      const res = await fetch("/api/users/me", { credentials: "include" });
+      if (!res.ok) return;
+      const j = (await res.json()) as { is_certified_pro?: boolean };
+      setIsCertifiedPro(Boolean(j.is_certified_pro));
+    })();
+  }, []);
 
   useEffect(() => {
     if (!id) return;
@@ -149,20 +160,15 @@ export default function EditArticlePage() {
               )}
             />
           </div>
-          <div className="space-y-2">
-            <label className="text-sm font-medium">本文</label>
-            <textarea
-              maxLength={10_000}
-              rows={16}
-              value={body}
-              onChange={(e) => setBody(e.target.value)}
-              className={cn(
-                "border-input bg-background font-mono text-sm leading-relaxed",
-                "min-h-[280px] w-full rounded-md border px-3 py-2",
-                "focus-visible:ring-ring focus-visible:ring-2 focus-visible:outline-none",
-              )}
-            />
-          </div>
+          <ArticleMarkdownField
+            id="edit-article-body"
+            label="本文（マークダウン・1万文字以内）"
+            body={body}
+            setBody={setBody}
+            maxLength={10_000}
+            rows={16}
+            isCertifiedPro={isCertifiedPro}
+          />
           <div className="space-y-2">
             <span className="text-sm font-medium">タグ</span>
             <div className="flex flex-wrap gap-2">

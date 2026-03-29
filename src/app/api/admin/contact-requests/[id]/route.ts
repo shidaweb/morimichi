@@ -78,10 +78,10 @@ export async function PATCH(request: Request, context: Ctx) {
     const { data: proProf } = await supabase
       .from("profiles")
       .select("nickname")
-      .eq("user_id", row.target_pro_user_id)
+      .eq("user_id", row.target_user_id)
       .maybeSingle();
 
-    const proEmail = await getAuthUserEmailById(row.target_pro_user_id);
+    const proEmail = await getAuthUserEmailById(row.target_user_id);
     if (proEmail) {
       void sendContactRequestForwardedToPro({
         to: proEmail,

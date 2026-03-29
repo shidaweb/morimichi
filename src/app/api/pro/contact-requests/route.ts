@@ -32,7 +32,7 @@ export async function GET() {
     .select(
       "id, requester_user_id, subject, message, status, created_at, forwarded_at, responded_at",
     )
-    .eq("target_pro_user_id", user.id)
+    .eq("target_user_id", user.id)
     .in("status", ["forwarded", "responded", "closed"])
     .order("forwarded_at", { ascending: false, nullsFirst: false })
     .limit(100);

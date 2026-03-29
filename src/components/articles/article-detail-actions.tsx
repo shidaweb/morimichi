@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import type { ProSpecialtyBadge } from "@/lib/pro/pro-specialty-badge";
 
 type Props = {
+  targetUserId: string;
   targetNickname: string;
   targetAvatarUrl: string | null;
   targetSpecialty: ProSpecialtyBadge | null;
@@ -14,6 +15,7 @@ type Props = {
 };
 
 export function ArticleDetailActions({
+  targetUserId,
   targetNickname,
   targetAvatarUrl,
   targetSpecialty,
@@ -35,9 +37,11 @@ export function ArticleDetailActions({
       <ContactRequestModal
         open={open}
         onClose={() => setOpen(false)}
+        targetUserId={targetUserId}
         targetNickname={targetNickname}
         targetAvatarUrl={targetAvatarUrl}
         targetSpecialty={targetSpecialty}
+        isCertifiedPro
       />
     </>
   );

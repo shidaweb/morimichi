@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { fetchConsultationRepliesData } from "@/lib/consultation-replies-data";
+import { autoFlagContactInContent } from "@/lib/moderation/auto-flag-contact-in-content";
 import { notifyReplyCreated } from "@/lib/notify-reply-subscribers";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { replyCreateSchema } from "@/lib/validations/reply";
@@ -107,7 +108,10 @@ export async function POST(request: Request, context: Ctx) {
       return NextResponse.json({ error: "parent_mismatch" }, { status: 400 });
     }
     if (parent.depth !== 1) {
-      return NextResponse.json({ error: "max_depth" }, { status: 400 });
+      return NextResponse.json(
+        { error: "max_depth", message: "これ以上返信のネストはできません" },
+        { status: 400 },
+      );
     }
     depth = 2;
     parentId = parent.id;
@@ -151,6 +155,22 @@ export async function POST(request: Request, context: Ctx) {
     parentReplyId: parentId,
     authorUserId: user.id,
   }).catch((err) => console.error("notifyReplyCreated", err));
+
+  if (inserted?.id) {
+    const { data: meProf } = await supabase
+      .from("profiles")
+      .select("nickname")
+      .eq("user_id", user.id)
+      .maybeSingle();
+    void autoFlagContactInContent({
+      supabase,
+      authorUserId: user.id,
+      authorNickname: meProf?.nickname ?? "(不明)",
+      targetType: "reply",
+      targetId: inserted.id,
+      text: body,
+    }).catch(console.error);
+  }
 
   return NextResponse.json({ id: inserted?.id });
 }

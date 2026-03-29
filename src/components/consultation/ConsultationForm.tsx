@@ -20,6 +20,11 @@ import {
   CONSULTATION_FORM_STEP_TOTAL,
   consultationFormStepIndex,
 } from "@/lib/consultation-form-steps";
+import {
+  CONTACT_CONTENT_BLOCKED_MESSAGE,
+  CONTACT_CONTENT_WARNING,
+} from "@/lib/consultation-contact-warning-copy";
+import { detectContactInfo } from "@/lib/utils/content-filter";
 import { cn } from "@/lib/utils";
 import type { Database } from "@/types/database";
 
@@ -114,11 +119,20 @@ export function ConsultationForm({ phases }: Props) {
         setError("タイトルを1〜100文字で入力してください");
         return;
       }
+      if (detectContactInfo(t).hasContactInfo) {
+        setError(CONTACT_CONTENT_BLOCKED_MESSAGE);
+        return;
+      }
       setStep(4);
     } else if (step === 4) {
       const b = body.trim();
       if (!b || b.length > 10000) {
         setError("本文を1〜10,000文字で入力してください");
+        return;
+      }
+      const combined = `${title.trim()}\n${b}`;
+      if (detectContactInfo(combined).hasContactInfo) {
+        setError(CONTACT_CONTENT_BLOCKED_MESSAGE);
         return;
       }
       setStep("preview");
@@ -137,6 +151,12 @@ export function ConsultationForm({ phases }: Props) {
     if (!phaseId) return;
     setSubmitting(true);
     setError(null);
+    const combined = `${title.trim()}\n${body.trim()}`;
+    if (detectContactInfo(combined).hasContactInfo) {
+      setError(CONTACT_CONTENT_BLOCKED_MESSAGE);
+      setSubmitting(false);
+      return;
+    }
     try {
       const res = await fetch("/api/consultations", {
         method: "POST",
@@ -227,6 +247,12 @@ export function ConsultationForm({ phases }: Props) {
       {step === 3 ? (
         <div className="space-y-4">
           <ConsultationStepHeader step={3} />
+          <Alert variant="default" className="border-amber-200 bg-amber-50 text-amber-950 dark:border-amber-900 dark:bg-amber-950/30 dark:text-amber-100">
+            <AlertTitle className="text-sm">ご注意</AlertTitle>
+            <AlertDescription className="text-xs leading-relaxed">
+              ⚠️ {CONTACT_CONTENT_WARNING}
+            </AlertDescription>
+          </Alert>
           <Label htmlFor="ct-title" className="sr-only">
             タイトル
           </Label>
@@ -247,6 +273,12 @@ export function ConsultationForm({ phases }: Props) {
       {step === 4 ? (
         <div className="space-y-4">
           <ConsultationStepHeader step={4} />
+          <Alert variant="default" className="border-amber-200 bg-amber-50 text-amber-950 dark:border-amber-900 dark:bg-amber-950/30 dark:text-amber-100">
+            <AlertTitle className="text-sm">ご注意</AlertTitle>
+            <AlertDescription className="text-xs leading-relaxed">
+              ⚠️ {CONTACT_CONTENT_WARNING}
+            </AlertDescription>
+          </Alert>
           <Alert>
             <AlertTitle>投稿前のお願い</AlertTitle>
             <AlertDescription className="space-y-2 text-sm leading-relaxed">

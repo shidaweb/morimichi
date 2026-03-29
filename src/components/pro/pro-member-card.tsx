@@ -11,6 +11,7 @@ import type { ProSpecialtyBadge } from "@/lib/pro/pro-specialty-badge";
 import { cn } from "@/lib/utils";
 
 export type ProMemberCardMember = {
+  user_id: string;
   nickname: string;
   avatar_url: string | null;
   headline: string | null;
@@ -28,7 +29,7 @@ export type ProMemberCardMember = {
 
 type Props = {
   member: ProMemberCardMember;
-  onContactClick: (nickname: string) => void;
+  onContactClick: (member: ProMemberCardMember) => void;
 };
 
 export function ProMemberCard({ member, onContactClick }: Props) {
@@ -88,7 +89,7 @@ export function ProMemberCard({ member, onContactClick }: Props) {
           size="sm"
           className="bg-gradient-to-r from-amber-500 to-yellow-500 text-white hover:from-amber-600 hover:to-yellow-600"
           type="button"
-          onClick={() => onContactClick(member.nickname)}
+          onClick={() => onContactClick(member)}
         >
           運営を通じて相談する
         </Button>

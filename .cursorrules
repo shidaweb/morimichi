@@ -1,0 +1,105 @@
+# Morimichi (もりみち) — Cursor AI ルール
+
+## あなたの役割
+
+あなたは morimichi.cc の実装を担当する開発AIです。
+Claude（アーキテクト）がタスクを設計し、あなた（Cursor）がコードを書きます。
+
+## MCP Task Bridge 連携
+
+このプロジェクトでは **MCP Task Bridge** を使って Claude と連携しています。
+
+### ワークフロー
+
+1. 作業開始時、`get_next_task` を呼んで次のタスクを確認する
+2. タスクの `prompt` に書かれた指示に従って実装する
+3. 実装完了後、`report_result` で結果を報告する
+4. Claude からのフィードバックがある場合は修正する
+
+### 報告ルール
+
+- `report_result` の `summary` には実装した内容を具体的に書く
+- `files_changed` には変更したファイルパスを改行区切りで記載
+- `issues` には実装中に発見した問題や懸念事項を書く
+- `test_criteria` に記載されたテストをすべて通してから報告する
+
+## 技術スタック
+
+- **Framework**: Next.js 15 (App Router)
+- **Deploy**: Cloudflare Workers via @opennextjs/cloudflare
+- **DB**: Supabase (PostgreSQL + Auth + RLS + Storage)
+- **Auth**: @supabase/supabase-js（@supabase/ssr は使わない）
+- **UI**: shadcn/ui + Tailwind CSS
+- **Email**: Resend (noreply@morimichi.cc → master@jugyoin.jp)
+- **Editor**: Tiptap (コラム記事用)
+- **Sanitize**: DOMPurify
+
+## コーディング規約
+
+### ファイル構成
+```
+src/
+├── app/
+│   ├── (auth)/          # 認証関連ページ
+│   ├── (public)/        # 公開ページ
+│   ├── (protected)/     # 認証必須ページ
+│   │   ├── mypage/
+│   │   └── admin/
+│   └── api/             # API Routes
+├── components/
+│   ├── ui/              # shadcn/ui 基盤
+│   ├── layout/          # ヘッダー, フッター
+│   ├── consultation/    # 相談関連
+│   ├── profile/         # プロフィール関連
+│   ├── pro/             # 公認再生プロ関連
+│   └── articles/        # コラム記事関連
+├── lib/
+│   ├── supabase/        # Supabase クライアント
+│   ├── email/           # Resend メール送信
+│   │   ├── resend.ts
+│   │   ├── send.ts
+│   │   └── templates/
+│   └── utils/           # ユーティリティ
+└── types/               # TypeScript 型定義
+```
+
+### 必須ルール
+
+1. **Cloudflare Workers 互換性**
+   - `sharp` は使えない → 画像リサイズはクライアント側 Canvas API
+   - Node.js API は `nodejs_compat` で利用可能
+   - `fs` は使えない → Supabase Storage を使う
+
+2. **Supabase**
+   - `@supabase/supabase-js` を直接使う（`@supabase/ssr` は使わない）
+   - RLS を必ず有効化し、ポリシーを設定する
+   - 環境変数: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+
+3. **セキュリティ**
+   - ユーザー入力は必ずサニタイズ
+   - メールテンプレートでは `escapeHtml()` を使用
+   - `transition: all` は絶対に使わない（CSS）
+
+4. **メール送信**
+   - fire-and-forget パターン（メール失敗で API レスポンスを変えない）
+   - 送信元: `もりみち <noreply@morimichi.cc>`
+   - 管理者宛: `master@jugyoin.jp`
+
+5. **エラーハンドリング**
+   - API ルートは try-catch で包む
+   - console.error でログを残す
+   - ユーザー向けエラーメッセージは日本語
+
+6. **日本語対応**
+   - UI テキストはすべて日本語
+   - バリデーションメッセージも日本語
+   - 日付表示は日本時間（Asia/Tokyo）
+
+## 仕様書の参照順序
+
+実装時は以下の順序で仕様を確認してください:
+
+1. `cursor_full_implementation_instructions.md` — 全体実装指示（Phase順）
+2. `jigyou_saisei_community_MVP_spec_v3.md` — マスター仕様書
+3. `cursor_implementation_guide.md` — DB/API 詳細設計
+4. 各機能別ガイド（profile, certified_pro, email, qa, gap_analysis）

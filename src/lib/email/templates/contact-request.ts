@@ -6,19 +6,30 @@ export function contactRequestEmail(data: {
   requesterNickname: string;
   requesterEmail: string;
   targetNickname: string;
-  targetSpecialtyName: string;
+  /** 公認プロのときのみ表示用 */
+  targetSpecialtyName: string | null;
+  targetIsCertifiedPro: boolean;
   subject: string;
   message: string;
   requestId: string;
 }) {
   const base = siteBaseUrl();
   const adminUrl = `${base}/admin/contact-requests/${data.requestId}`;
+  const targetLabel = data.targetIsCertifiedPro ? "宛先プロ" : "宛先回答者";
+  const targetLineText =
+    data.targetIsCertifiedPro && data.targetSpecialtyName
+      ? `${data.targetNickname}（${data.targetSpecialtyName}）`
+      : data.targetNickname;
+  const targetLineHtml =
+    data.targetIsCertifiedPro && data.targetSpecialtyName
+      ? `${escapeHtml(data.targetNickname)}（${escapeHtml(data.targetSpecialtyName)}）`
+      : escapeHtml(data.targetNickname);
 
   return {
     subject: `【もりみち】相談リクエスト — ${data.requesterNickname} → ${data.targetNickname}`,
     text: [
       `依頼者: ${data.requesterNickname} (${data.requesterEmail})`,
-      `宛先プロ: ${data.targetNickname} (${data.targetSpecialtyName})`,
+      `${targetLabel}: ${targetLineText}`,
       `件名: ${data.subject}`,
       "",
       data.message,
@@ -34,8 +45,8 @@ export function contactRequestEmail(data: {
             <td style="padding: 10px; border: 1px solid #e5e7eb;">${escapeHtml(data.requesterNickname)}（${escapeHtml(data.requesterEmail)}）</td>
           </tr>
           <tr>
-            <td style="padding: 10px; border: 1px solid #e5e7eb; background: #f9fafb; font-weight: bold;">宛先プロ</td>
-            <td style="padding: 10px; border: 1px solid #e5e7eb;">${escapeHtml(data.targetNickname)}（${escapeHtml(data.targetSpecialtyName)}）</td>
+            <td style="padding: 10px; border: 1px solid #e5e7eb; background: #f9fafb; font-weight: bold;">${escapeHtml(targetLabel)}</td>
+            <td style="padding: 10px; border: 1px solid #e5e7eb;">${targetLineHtml}</td>
           </tr>
           <tr>
             <td style="padding: 10px; border: 1px solid #e5e7eb; background: #f9fafb; font-weight: bold;">件名</td>

@@ -17,7 +17,6 @@ function ProMembersPageInner() {
   const [total, setTotal] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(true);
-  const [contactNick, setContactNick] = useState<string | null>(null);
   const [contactMember, setContactMember] = useState<ProMemberCardMember | null>(null);
   const [specialties, setSpecialties] = useState<Spec[]>([]);
 
@@ -147,10 +146,7 @@ function ProMembersPageInner() {
               <li key={m.nickname}>
                 <ProMemberCard
                   member={m}
-                  onContactClick={(nick) => {
-                    setContactNick(nick);
-                    setContactMember(m);
-                  }}
+                  onContactClick={(mem) => setContactMember(mem)}
                 />
               </li>
             ))}
@@ -176,14 +172,13 @@ function ProMembersPageInner() {
       ) : null}
 
       <ContactRequestModal
-        open={Boolean(contactNick && contactMember)}
-        onClose={() => {
-          setContactNick(null);
-          setContactMember(null);
-        }}
-        targetNickname={contactNick ?? ""}
+        open={Boolean(contactMember)}
+        onClose={() => setContactMember(null)}
+        targetUserId={contactMember?.user_id ?? ""}
+        targetNickname={contactMember?.nickname ?? ""}
         targetAvatarUrl={contactMember?.avatar_url ?? null}
         targetSpecialty={contactMember?.pro_specialty ?? null}
+        isCertifiedPro
       />
     </div>
   );

@@ -38,6 +38,7 @@ export function RegisterForm({ phases, siteUrl }: Props) {
       nickname: "",
       role: "consulter",
       experiencePhases: [],
+      profilePublic: true,
       agreeTerms: false,
     },
   });
@@ -60,6 +61,9 @@ export function RegisterForm({ phases, siteUrl }: Props) {
     const experience =
       values.role === "consulter" ? null : values.experiencePhases ?? null;
 
+    const isProfilePublic =
+      values.role === "consulter" ? false : (values.profilePublic ?? true);
+
     const { data, error } = await supabase.auth.signUp({
       email: values.email,
       password: values.password,
@@ -70,6 +74,7 @@ export function RegisterForm({ phases, siteUrl }: Props) {
           role: values.role,
           experience_phases:
             experience && experience.length > 0 ? experience : null,
+          is_profile_public: isProfilePublic,
         },
       },
     });
@@ -142,6 +147,27 @@ export function RegisterForm({ phases, siteUrl }: Props) {
             }}
             disabled={form.formState.isSubmitting || !supabase}
           />
+
+          {(role === "advisor" || role === "both") && (
+            <div className="flex items-start gap-2 rounded-lg border border-border p-3">
+              <Checkbox
+                id="profile-public"
+                checked={form.watch("profilePublic") ?? true}
+                onCheckedChange={(c) =>
+                  form.setValue("profilePublic", c === true, { shouldValidate: true })
+                }
+                disabled={form.formState.isSubmitting || !supabase}
+              />
+              <div className="space-y-1">
+                <Label htmlFor="profile-public" className="cursor-pointer font-normal">
+                  プロフィールを公開する（推奨）
+                </Label>
+                <p className="text-muted-foreground text-xs leading-relaxed">
+                  公開すると、相談スレッドなどからあなたのプロフィールページに遷移できます。後からマイページで変更できます。
+                </p>
+              </div>
+            </div>
+          )}
 
           {(role === "advisor" || role === "both") && (
             <div className="space-y-2">

@@ -30,7 +30,7 @@ export async function GET() {
   const uids = new Set<string>();
   for (const r of rows ?? []) {
     uids.add(r.requester_user_id);
-    uids.add(r.target_pro_user_id);
+    uids.add(r.target_user_id);
   }
 
   const nickByUser = new Map<string, string>();
@@ -45,7 +45,7 @@ export async function GET() {
   const list = (rows ?? []).map((r) => ({
     ...r,
     requester_nickname: nickByUser.get(r.requester_user_id) ?? "",
-    target_nickname: nickByUser.get(r.target_pro_user_id) ?? "",
+    target_nickname: nickByUser.get(r.target_user_id) ?? "",
   }));
 
   return NextResponse.json({ requests: list });

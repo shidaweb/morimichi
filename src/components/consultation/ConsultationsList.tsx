@@ -4,6 +4,7 @@ import { useState } from "react";
 
 import { ConsultationCard } from "@/components/consultation/ConsultationCard";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useConsultations } from "@/hooks/useConsultations";
 import type { SortMode } from "@/lib/consultation-cursor";
@@ -18,11 +19,27 @@ type Props = {
 export function ConsultationsList({ phases }: Props) {
   const [phaseTab, setPhaseTab] = useState("all");
   const [sort, setSort] = useState<SortMode>("new");
+  const [keyword, setKeyword] = useState("");
   const { items, nextCursor, loading, loadingMore, error, loadMore } =
-    useConsultations(phaseTab, sort);
+    useConsultations(phaseTab, sort, keyword);
 
   return (
     <div className="space-y-6">
+      <div className="space-y-2">
+        <label htmlFor="consultation-keyword" className="sr-only">
+          キーワードで相談を検索
+        </label>
+        <Input
+          id="consultation-keyword"
+          type="search"
+          placeholder="キーワードで相談を検索…"
+          value={keyword}
+          onChange={(e) => setKeyword(e.target.value)}
+          className="max-w-xl"
+          autoComplete="off"
+        />
+      </div>
+
       <Tabs value={phaseTab} onValueChange={setPhaseTab} className="w-full">
         <div className="overflow-x-auto pb-1">
           <TabsList className="inline-flex h-auto w-max min-w-full flex-nowrap justify-start gap-1 bg-transparent p-0">
@@ -89,7 +106,7 @@ export function ConsultationsList({ phases }: Props) {
         </ul>
       )}
 
-      {nextCursor ? (
+      {nextCursor && keyword.trim().length === 0 ? (
         <div className="flex justify-center pt-2">
           <Button
             type="button"

@@ -14,6 +14,8 @@ import type { ConsultationReactionsSummary, ReplyPublic } from "@/types/replies"
 
 type Props = {
   consultationId: string;
+  consultationOwnerUserId: string | null;
+  viewerUserId: string | null;
   initialViewCount: number;
   initialReplyCount: number;
   initialReactionCount: number;
@@ -27,6 +29,8 @@ type Props = {
 
 export function ConsultationDetailClient({
   consultationId,
+  consultationOwnerUserId,
+  viewerUserId,
   initialViewCount,
   initialReplyCount,
   initialReactionCount,
@@ -87,7 +91,9 @@ export function ConsultationDetailClient({
 
       <div className="text-muted-foreground flex flex-wrap items-center gap-3 text-sm">
         <ViewCounter count={initialViewCount} />
-        <span>💬 {initialReplyCount.toLocaleString("ja-JP")}回答</span>
+        <span suppressHydrationWarning>
+          💬 {initialReplyCount.toLocaleString("ja-JP")}回答
+        </span>
         <div className="flex flex-wrap items-center gap-2">
           <ReactionButton
             targetType="consultation"
@@ -95,6 +101,9 @@ export function ConsultationDetailClient({
             initialActive={hasMyConsultationEmpathy}
             initialCount={consultationEmpathyCount}
             isLoggedIn={isLoggedIn}
+            isOwnContent={
+              Boolean(viewerUserId && consultationOwnerUserId === viewerUserId)
+            }
             label="共感"
             onAfterToggle={() => void loadThread()}
           />
@@ -117,6 +126,7 @@ export function ConsultationDetailClient({
           consultationId={consultationId}
           nodes={tree}
           isLoggedIn={isLoggedIn}
+          viewerUserId={viewerUserId}
           onMutate={refreshAll}
         />
       </section>

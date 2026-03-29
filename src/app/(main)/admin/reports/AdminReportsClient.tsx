@@ -21,6 +21,7 @@ const REASON_LABEL: Record<ReportReason, string> = {
   advisor_solicitation: "アドバイザー勧誘",
   spam: "スパム",
   other: "その他",
+  auto_detected_contact_info: "連絡先（自動検出）",
 };
 
 const STATUS_LABEL: Record<ReportStatus, string> = {

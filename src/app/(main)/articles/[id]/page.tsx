@@ -1,16 +1,72 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Calendar, Eye } from "lucide-react";
 
 import { ArticleContent } from "@/components/articles/article-content";
 import { ArticleDetailActions } from "@/components/articles/article-detail-actions";
+import { ShareButtons } from "@/components/articles/share-buttons";
 import { ArticleViewTracker } from "@/components/articles/article-view-tracker";
 import { CertifiedProBadge } from "@/components/ui/certified-pro-badge";
 import { UserAvatar } from "@/components/ui/user-avatar";
 import { getArticleForPublicPage } from "@/lib/articles/get-article-public-page";
+import { getArticleOgMetadata } from "@/lib/articles/get-article-og-metadata";
+import { SITE_NAME } from "@/lib/constants";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 
 type Props = { params: Promise<{ id: string }> };
+
+const OG_SITE_NAME = `${SITE_NAME} — 早期事業再生コミュニティ`;
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { id } = await params;
+
+  let supabase;
+  try {
+    supabase = await createServerSupabaseClient();
+  } catch {
+    return { title: `コラム | ${SITE_NAME}` };
+  }
+
+  const article = await getArticleOgMetadata(supabase, id);
+  if (!article) {
+    return { title: `コラム | ${SITE_NAME}` };
+  }
+
+  const stripped = article.body
+    .replace(/[#*_\[\]()>`]/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+  const description =
+    (article.summary && article.summary.trim()) || stripped.slice(0, 120) || "コラム記事";
+
+  const cover = article.cover_image_url?.trim() || null;
+  const ogImages = cover
+    ? [{ url: cover, width: 1200, height: 630 }]
+    : [{ url: "/og-default.png", width: 1200, height: 630 }];
+
+  return {
+    title: article.title,
+    description,
+    openGraph: {
+      title: article.title,
+      description,
+      url: `https://morimichi.cc/articles/${id}`,
+      siteName: OG_SITE_NAME,
+      type: "article",
+      publishedTime: article.published_at ?? undefined,
+      authors: [article.authorNickname],
+      images: ogImages,
+      locale: "ja_JP",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: article.title,
+      description,
+      images: cover ? [cover] : ["/og-default.png"],
+    },
+  };
+}
 
 export default async function ArticleDetailPage({ params }: Props) {
   const { id } = await params;
@@ -102,6 +158,11 @@ export default async function ArticleDetailPage({ params }: Props) {
           </div>
         ) : null}
 
+        <ShareButtons
+          url={`https://morimichi.cc/articles/${article.id}`}
+          title={article.title}
+        />
+
         {article.more_from_author.length > 0 ? (
           <section className="border-border space-y-3 border-t pt-6">
             <h2 className="text-sm font-semibold">この著者の他の記事</h2>
@@ -141,6 +202,7 @@ export default async function ArticleDetailPage({ params }: Props) {
             <p className="text-muted-foreground text-sm">これはあなたの記事です。</p>
           ) : (
             <ArticleDetailActions
+              targetUserId={article.author.user_id}
               targetNickname={article.author.nickname}
               targetAvatarUrl={article.author.avatar_url}
               targetSpecialty={article.author.pro_specialty}
