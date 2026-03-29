@@ -12,6 +12,10 @@ binding = "ASSETS"
 binding = "RATE_LIMIT_KV"
 id = "2bce83415c35480e8ff625db29008092"
 
+# Secrets (do NOT put real keys in [vars]):
+#   wrangler secret put RESEND_API_KEY
+# Optional: wrangler secret put RESEND_FROM_EMAIL   # e.g. もりみち <noreply@morimichi.cc>
+# Optional: wrangler secret put MORIMICHI_MASTER_EMAIL   # default master@jugyoin.jp
 # Optional: schedule digest email processing (same KV as rate limits + digest:v1:* keys)
 # [triggers]
 # crons = ["*/10 * * * *"]

@@ -1,8 +1,23 @@
 import { NextResponse } from "next/server";
 
+import { sendAdminEmail } from "@/lib/email/send";
+import { reportSubmittedEmail } from "@/lib/email/templates/report-submitted";
 import { reportCreateSchema } from "@/lib/validations/report";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import type { ReactionTarget } from "@/types/database";
+
+const REPORT_REASON_LABEL: Record<string, string> = {
+  defamation: "誹謗中傷",
+  solicitation: "勧誘",
+  crisis: "危機的状況の示唆",
+  personal_info: "個人情報",
+  illegal: "違法行為",
+  misinformation: "誤情報",
+  legal_advice: "法律相談の不適切な行為",
+  advisor_solicitation: "回答者による勧誘",
+  spam: "スパム",
+  other: "その他",
+};
 
 export async function POST(request: Request) {
   let supabase;
@@ -58,18 +73,59 @@ export async function POST(request: Request) {
     }
   }
 
-  const { error } = await supabase.from("reports").insert({
-    reporter_user_id: user.id,
-    target_type: targetType as ReactionTarget,
-    target_id: targetId,
-    reason,
-    detail: detail ?? null,
-    status: "pending",
-  });
+  const { data: inserted, error } = await supabase
+    .from("reports")
+    .insert({
+      reporter_user_id: user.id,
+      target_type: targetType as ReactionTarget,
+      target_id: targetId,
+      reason,
+      detail: detail ?? null,
+      status: "pending",
+    })
+    .select("id")
+    .maybeSingle();
 
   if (error) {
     console.error(error);
     return NextResponse.json({ error: "report_failed" }, { status: 500 });
+  }
+
+  const reportId = inserted?.id;
+  if (reportId) {
+    const { data: reporterProf } = await supabase
+      .from("profiles")
+      .select("nickname")
+      .eq("user_id", user.id)
+      .maybeSingle();
+
+    let targetTitle = "(無題)";
+    if (targetType === "consultation") {
+      const { data: c } = await supabase
+        .from("consultations")
+        .select("title")
+        .eq("id", targetId)
+        .maybeSingle();
+      targetTitle = c?.title?.trim() || targetTitle;
+    } else {
+      const { data: r } = await supabase
+        .from("replies")
+        .select("body")
+        .eq("id", targetId)
+        .maybeSingle();
+      const snippet = r?.body?.trim().slice(0, 80) ?? "";
+      targetTitle = snippet.length > 0 ? snippet : targetTitle;
+    }
+
+    const emailData = reportSubmittedEmail({
+      reporterNickname: reporterProf?.nickname ?? "ご利用者",
+      targetType: targetType as "consultation" | "reply",
+      targetTitle,
+      reason: REPORT_REASON_LABEL[reason] ?? reason,
+      detail: detail ?? null,
+      reportId,
+    });
+    void sendAdminEmail(emailData).catch(console.error);
   }
 
   return NextResponse.json({ ok: true });

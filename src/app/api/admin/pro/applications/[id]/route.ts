@@ -89,8 +89,25 @@ export async function PATCH(request: Request, context: Ctx) {
       return NextResponse.json({ error: "profile_update_failed" }, { status: 500 });
     }
 
+    const { data: applicantProf } = await supabase
+      .from("profiles")
+      .select("nickname")
+      .eq("user_id", app.user_id)
+      .maybeSingle();
+
+    const { data: specApproved } = await supabase
+      .from("pro_specialties")
+      .select("name")
+      .eq("slug", app.specialty)
+      .maybeSingle();
+
     const email = await getAuthUserEmailById(app.user_id);
-    if (email) void sendProApplicationApprovedToUser(email);
+    if (email) {
+      void sendProApplicationApprovedToUser(email, {
+        nickname: applicantProf?.nickname ?? "ご利用者",
+        specialtyName: specApproved?.name ?? app.specialty,
+      }).catch(console.error);
+    }
 
     return NextResponse.json({ ok: true, status: "approved" });
   }
@@ -111,8 +128,18 @@ export async function PATCH(request: Request, context: Ctx) {
     return NextResponse.json({ error: "update_failed" }, { status: 500 });
   }
 
+  const { data: rejectProf } = await supabase
+    .from("profiles")
+    .select("nickname")
+    .eq("user_id", app.user_id)
+    .maybeSingle();
+
   const email = await getAuthUserEmailById(app.user_id);
-  if (email) void sendProApplicationRejectedToUser(email);
+  if (email) {
+    void sendProApplicationRejectedToUser(email, {
+      nickname: rejectProf?.nickname ?? "ご利用者",
+    }).catch(console.error);
+  }
 
   return NextResponse.json({ ok: true, status: "rejected" });
 }

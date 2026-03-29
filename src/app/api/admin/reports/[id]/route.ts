@@ -2,6 +2,9 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 
 import { getModeratorContext } from "@/lib/admin-auth";
+import { sendEmail } from "@/lib/email/send";
+import { reportResolvedEmail } from "@/lib/email/templates/report-resolved";
+import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import type { ReportStatus } from "@/types/database";
 
@@ -45,6 +48,16 @@ export async function PATCH(request: Request, context: Ctx) {
   const resolvedAt =
     status === "resolved" || status === "dismissed" ? new Date().toISOString() : null;
 
+  const { data: prev, error: prevErr } = await supabase
+    .from("reports")
+    .select("status, reporter_user_id")
+    .eq("id", id)
+    .maybeSingle();
+
+  if (prevErr || !prev) {
+    return NextResponse.json({ error: "not_found" }, { status: 404 });
+  }
+
   const { error } = await supabase
     .from("reports")
     .update({
@@ -56,6 +69,32 @@ export async function PATCH(request: Request, context: Ctx) {
   if (error) {
     console.error(error);
     return NextResponse.json({ error: "update_failed" }, { status: 500 });
+  }
+
+  const shouldNotifyResolved =
+    status === "resolved" && prev.status !== "resolved";
+
+  if (shouldNotifyResolved) {
+    try {
+      const admin = createAdminSupabaseClient();
+      const { data: repProf } = await admin
+        .from("profiles")
+        .select("nickname")
+        .eq("user_id", prev.reporter_user_id)
+        .maybeSingle();
+      const { data: authData } = await admin.auth.admin.getUserById(
+        prev.reporter_user_id,
+      );
+      const to = authData.user?.email;
+      if (to) {
+        const { subject, html, text } = reportResolvedEmail({
+          nickname: repProf?.nickname ?? "ご利用者",
+        });
+        void sendEmail({ to, subject, html, text }).catch(console.error);
+      }
+    } catch (e) {
+      console.error("report resolved email skipped:", e);
+    }
   }
 
   return NextResponse.json({ ok: true });

@@ -1,21 +1,18 @@
 import { sendEmail } from "@/lib/email/send";
-import type { ReplyNotificationKind } from "@/lib/email/templates/reply-notification";
-import { replyNotificationEmail } from "@/lib/email/templates/reply-notification";
+import { reactionNotificationEmail } from "@/lib/email/templates/reaction-notification";
 
-export async function sendReplyNotificationEmail(params: {
+export async function sendReactionNotificationEmail(params: {
   to: string;
   consultationId: string;
   consultationTitle: string;
   recipientNickname: string;
-  notificationKind: ReplyNotificationKind;
-  replyCount: number;
+  reactionCount: number;
 }): Promise<{ ok: boolean; error?: string }> {
-  const { subject, html, text } = replyNotificationEmail({
+  const { subject, html, text } = reactionNotificationEmail({
     recipientNickname: params.recipientNickname,
-    notificationKind: params.notificationKind,
     consultationTitle: params.consultationTitle,
     consultationId: params.consultationId,
-    replyCount: params.replyCount,
+    reactionCount: params.reactionCount,
   });
 
   const result = await sendEmail({

@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 
+import { sendEmail } from "@/lib/email/send";
+import { welcomeEmail } from "@/lib/email/templates/welcome";
 import { ensureProfileForUser } from "@/lib/profile/bootstrap-from-auth-metadata";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 
@@ -29,6 +31,21 @@ export async function POST() {
   if (error) {
     console.error("profile bootstrap:", error);
     return NextResponse.json({ error: "bootstrap_failed", detail: error }, { status: 500 });
+  }
+
+  if (created && user.email_confirmed_at && user.email) {
+    const { data: prof } = await supabase
+      .from("profiles")
+      .select("nickname, role")
+      .eq("user_id", user.id)
+      .maybeSingle();
+    if (prof?.nickname) {
+      const { subject, html, text } = welcomeEmail({
+        nickname: prof.nickname,
+        role: prof.role,
+      });
+      void sendEmail({ to: user.email, subject, html, text }).catch(console.error);
+    }
   }
 
   return NextResponse.json({ ok: true, created });

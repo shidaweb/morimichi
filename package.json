@@ -10,6 +10,7 @@
     "test:e2e": "playwright test",
     "test:e2e:headed": "playwright test --headed",
     "test:integration:rls": "node --test tests/integration/rls-policies.test.mjs",
+    "test:integration:email": "vitest run",
     "preview": "opennextjs-cloudflare preview",
     "deploy": "next build && opennextjs-cloudflare deploy",
     "cf-typegen": "wrangler types"
@@ -51,6 +52,7 @@
     "playwright": "^1.58.2",
     "tailwindcss": "^4",
     "typescript": "^5",
+    "vitest": "^3.2.4",
     "wrangler": "^4.77.0"
   }
 }

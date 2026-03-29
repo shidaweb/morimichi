@@ -75,6 +75,12 @@ export async function PATCH(request: Request, context: Ctx) {
       .eq("user_id", row.requester_user_id)
       .maybeSingle();
 
+    const { data: proProf } = await supabase
+      .from("profiles")
+      .select("nickname")
+      .eq("user_id", row.target_pro_user_id)
+      .maybeSingle();
+
     const proEmail = await getAuthUserEmailById(row.target_pro_user_id);
     if (proEmail) {
       void sendContactRequestForwardedToPro({
@@ -82,6 +88,7 @@ export async function PATCH(request: Request, context: Ctx) {
         subjectLine: row.subject,
         message: row.message,
         requesterNickname: reqProf?.nickname ?? "利用者",
+        proNickname: proProf?.nickname ?? "ご利用者",
       });
     }
 

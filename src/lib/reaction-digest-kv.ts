@@ -1,36 +1,25 @@
 /// <reference types="@cloudflare/workers-types" />
 
-import type { ReplyNotificationKind } from "@/lib/email/templates/reply-notification";
+import { sendReactionNotificationEmail } from "@/lib/email/send-reaction-notification";
 import { createAdminSupabaseClient } from "@/lib/supabase/admin";
-import { sendReplyNotificationEmail } from "@/lib/email/send-reply-notification";
 
-const PREFIX = "digest:v1:";
+const PREFIX = "digest_reaction:v1:";
 
 type DigestPayload = {
   firstAt: number;
   lastAt: number;
   n: number;
-  notificationKind?: ReplyNotificationKind;
 };
 
-export async function enqueueDigestNotification(
+export async function enqueueReactionDigestNotification(
   kv: KVNamespace,
-  opts: {
-    recipientUserId: string;
-    consultationId: string;
-    notificationKind: ReplyNotificationKind;
-  },
+  opts: { recipientUserId: string; consultationId: string },
 ): Promise<void> {
   const key = `${PREFIX}${opts.recipientUserId}:${opts.consultationId}`;
   const now = Date.now();
   const raw = await kv.get(key);
   if (!raw) {
-    const payload: DigestPayload = {
-      firstAt: now,
-      lastAt: now,
-      n: 1,
-      notificationKind: opts.notificationKind,
-    };
+    const payload: DigestPayload = { firstAt: now, lastAt: now, n: 1 };
     await kv.put(key, JSON.stringify(payload), { expirationTtl: 7200 });
     return;
   }
@@ -38,12 +27,7 @@ export async function enqueueDigestNotification(
   try {
     prev = JSON.parse(raw) as DigestPayload;
   } catch {
-    const payload: DigestPayload = {
-      firstAt: now,
-      lastAt: now,
-      n: 1,
-      notificationKind: opts.notificationKind,
-    };
+    const payload: DigestPayload = { firstAt: now, lastAt: now, n: 1 };
     await kv.put(key, JSON.stringify(payload), { expirationTtl: 7200 });
     return;
   }
@@ -51,15 +35,11 @@ export async function enqueueDigestNotification(
     firstAt: prev.firstAt,
     lastAt: now,
     n: prev.n + 1,
-    notificationKind: prev.notificationKind ?? opts.notificationKind,
   };
   await kv.put(key, JSON.stringify(next), { expirationTtl: 7200 });
 }
 
-/**
- * Sends one email per key where the digest window (1 hour from first event) has elapsed.
- */
-export async function processDueDigestNotifications(
+export async function processDueReactionDigestNotifications(
   kv: KVNamespace,
 ): Promise<{ processed: number; errors: number }> {
   const now = Date.now();
@@ -109,11 +89,11 @@ export async function processDueDigestNotifications(
 
       const { data: profile } = await admin
         .from("profiles")
-        .select("notification_on_reply, nickname")
+        .select("notification_on_reaction, nickname")
         .eq("user_id", recipientUserId)
         .maybeSingle();
 
-      if (!profile?.notification_on_reply) {
+      if (!profile?.notification_on_reaction) {
         await kv.delete(name);
         continue;
       }
@@ -134,15 +114,13 @@ export async function processDueDigestNotifications(
 
       const consultationTitle = consultation?.title ?? "（無題）";
       const recipientNickname = profile.nickname ?? "ご利用者";
-      const notificationKind = data.notificationKind ?? "reply_to_consultation";
 
-      const result = await sendReplyNotificationEmail({
+      const result = await sendReactionNotificationEmail({
         to: email,
         consultationId,
         consultationTitle,
         recipientNickname,
-        notificationKind,
-        replyCount: data.n,
+        reactionCount: data.n,
       });
       if (result.ok) {
         await kv.delete(name);

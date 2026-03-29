@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 
 import { getRateLimitKv } from "@/lib/cloudflare/kv";
 import { processDueDigestNotifications } from "@/lib/notification-digest-kv";
+import { processDueReactionDigestNotifications } from "@/lib/reaction-digest-kv";
 
 function authorize(request: Request): boolean {
   const expected = process.env.CRON_SECRET;
@@ -32,6 +33,13 @@ export async function GET(request: Request) {
     });
   }
 
-  const result = await processDueDigestNotifications(kv);
-  return NextResponse.json({ ok: true, ...result });
+  const replies = await processDueDigestNotifications(kv);
+  const reactions = await processDueReactionDigestNotifications(kv);
+  return NextResponse.json({
+    ok: true,
+    replies,
+    reactions,
+    processed: replies.processed + reactions.processed,
+    errors: replies.errors + reactions.errors,
+  });
 }

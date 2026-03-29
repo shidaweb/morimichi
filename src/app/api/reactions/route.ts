@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 
 import { z } from "zod";
 
+import { notifyReactionCreated } from "@/lib/notify-reaction-subscribers";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import type { ReactionTarget } from "@/types/database";
 
@@ -94,6 +95,13 @@ export async function POST(request: Request) {
     console.error(insErr);
     return NextResponse.json({ error: "create_failed" }, { status: 500 });
   }
+
+  void notifyReactionCreated({
+    supabase,
+    targetType: targetType as ReactionTarget,
+    targetId,
+    actorUserId: user.id,
+  }).catch(console.error);
 
   return NextResponse.json({ active: true });
 }
