@@ -98,7 +98,7 @@ export async function notifyReplyCreated(params: {
     return;
   }
 
-  void sendReplyNotificationEmail({
+  await sendReplyNotificationEmail({
     to: email,
     consultationId,
     consultationTitle,

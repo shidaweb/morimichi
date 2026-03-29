@@ -135,7 +135,7 @@ export async function POST(request: Request) {
       detail: detail ?? null,
       reportId,
     });
-    void sendAdminEmail(emailData).catch(console.error);
+    await sendAdminEmail(emailData).catch(console.error);
   }
 
   return NextResponse.json({ ok: true });

@@ -44,7 +44,7 @@ export async function POST() {
         nickname: prof.nickname,
         role: prof.role,
       });
-      void sendEmail({ to: user.email, subject, html, text }).catch(console.error);
+      await sendEmail({ to: user.email, subject, html, text }).catch(console.error);
     }
   }
 

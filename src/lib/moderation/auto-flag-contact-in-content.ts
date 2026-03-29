@@ -39,5 +39,5 @@ export async function autoFlagContactInContent(params: {
     authorNickname: params.authorNickname,
     matches,
   });
-  void sendAdminEmail(email).catch(console.error);
+  await sendAdminEmail(email).catch(console.error);
 }

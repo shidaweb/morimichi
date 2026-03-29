@@ -99,7 +99,7 @@ export async function POST(request: Request) {
           nickname: prof?.nickname ?? "ご利用者",
           reason: reasonText,
         });
-        void sendEmail({ to, subject, html, text }).catch(console.error);
+        await sendEmail({ to, subject, html, text }).catch(console.error);
       }
     } catch (e) {
       console.error("account warning email skipped:", e);

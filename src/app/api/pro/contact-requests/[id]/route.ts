@@ -90,7 +90,7 @@ export async function PATCH(request: Request, context: Ctx) {
       requesterNickname: reqProf?.nickname ?? "ご利用者",
       proNickname: proProf?.nickname ?? "公認再生プロ",
     });
-    void sendEmail({ to: requesterEmail, subject, html, text }).catch(console.error);
+    await sendEmail({ to: requesterEmail, subject, html, text }).catch(console.error);
   }
 
   return NextResponse.json({ ok: true, status: "responded" });

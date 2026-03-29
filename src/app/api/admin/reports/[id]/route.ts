@@ -90,7 +90,7 @@ export async function PATCH(request: Request, context: Ctx) {
         const { subject, html, text } = reportResolvedEmail({
           nickname: repProf?.nickname ?? "ご利用者",
         });
-        void sendEmail({ to, subject, html, text }).catch(console.error);
+        await sendEmail({ to, subject, html, text }).catch(console.error);
       }
     } catch (e) {
       console.error("report resolved email skipped:", e);

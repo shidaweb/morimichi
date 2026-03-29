@@ -143,7 +143,7 @@ export async function POST(request: Request) {
   const requesterEmail =
     user.email ?? (await getAuthUserEmailById(user.id)) ?? "(不明)";
 
-  void sendContactRequestNotifyToMaster({
+  await sendContactRequestNotifyToMaster({
     requesterNickname: requester?.nickname ?? "(不明)",
     requesterEmail,
     targetNickname: target.nickname,
@@ -152,7 +152,7 @@ export async function POST(request: Request) {
     subject,
     message,
     requestId: row!.id,
-  });
+  }).catch(console.error);
 
   return NextResponse.json({
     id: row!.id,

@@ -83,13 +83,13 @@ export async function PATCH(request: Request, context: Ctx) {
 
     const proEmail = await getAuthUserEmailById(row.target_user_id);
     if (proEmail) {
-      void sendContactRequestForwardedToPro({
+      await sendContactRequestForwardedToPro({
         to: proEmail,
         subjectLine: row.subject,
         message: row.message,
         requesterNickname: reqProf?.nickname ?? "利用者",
         proNickname: proProf?.nickname ?? "ご利用者",
-      });
+      }).catch(console.error);
     }
 
     return NextResponse.json({ ok: true, status: "forwarded" });

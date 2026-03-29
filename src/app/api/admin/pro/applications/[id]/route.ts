@@ -103,7 +103,7 @@ export async function PATCH(request: Request, context: Ctx) {
 
     const email = await getAuthUserEmailById(app.user_id);
     if (email) {
-      void sendProApplicationApprovedToUser(email, {
+      await sendProApplicationApprovedToUser(email, {
         nickname: applicantProf?.nickname ?? "ご利用者",
         specialtyName: specApproved?.name ?? app.specialty,
       }).catch(console.error);
@@ -136,7 +136,7 @@ export async function PATCH(request: Request, context: Ctx) {
 
   const email = await getAuthUserEmailById(app.user_id);
   if (email) {
-    void sendProApplicationRejectedToUser(email, {
+    await sendProApplicationRejectedToUser(email, {
       nickname: rejectProf?.nickname ?? "ご利用者",
     }).catch(console.error);
   }

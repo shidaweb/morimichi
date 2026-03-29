@@ -104,13 +104,13 @@ export async function POST(request: Request) {
     (await getAuthUserEmailById(user.id)) ??
     "(メール取得不可)";
 
-  void sendProApplicationNotifyToMaster({
+  await sendProApplicationNotifyToMaster({
     nickname: profile?.nickname ?? "(不明)",
     email,
     specialtyName,
     applicationText,
     applicationId: row!.id,
-  });
+  }).catch(console.error);
 
   return NextResponse.json({
     id: row!.id,

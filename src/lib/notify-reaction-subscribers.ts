@@ -90,7 +90,7 @@ export async function notifyReactionCreated(params: {
     return;
   }
 
-  void sendReactionNotificationEmail({
+  await sendReactionNotificationEmail({
     to: email,
     consultationId,
     consultationTitle,
